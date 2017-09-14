@@ -89,7 +89,9 @@ public class Dom {
 	 * And a name can refer just one Dom.Struct.
 	 */
 	public Struct setName(String name, Struct dst) {
-		named.remove(name);
+		Struct old = named.remove(name);
+		if (old != null)
+			old.name = null;
 		if (dst != null) {
 			named.remove(dst.name);
 			named.put(name, dst);
@@ -114,9 +116,9 @@ public class Dom {
 		
 		public String getName() { return name; }
 		
-		public Object getField(String name) { return fields.get(name); }
+		public Object get(String name) { return fields.get(name); }
 		
-		public Struct setField(String name, Object val) {
+		public Struct set(String name, Object val) {
 			if (!type.fields.contains(name))
 				throw new UnsupportedOperationException("struct " + type.name + " doesn't have field " + name);
 			fields.put(name, val);

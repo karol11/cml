@@ -95,7 +95,7 @@ public class CmlReader {
 					break;
 				String field = getId("field");
 				r.type.fields.add(field);
-				r.setField(field, parseNode(true));
+				r.set(field, parseNode(true));
 			} while (fieldIndent == indentPos);
 		}
 		return r;
@@ -127,7 +127,7 @@ public class CmlReader {
 			}
 			for (; cur == ' ' || cur == '\t'; next()) {				
 				if (indentWithTabs != (cur == '\t'))
-					throw new RuntimeException("mixed tabs and spaces at " + lineNumber + ":" + cur);
+					error("mixed tabs and spaces");
 			}
 		}
 		indentPos = charPos;
@@ -163,7 +163,7 @@ public class CmlReader {
 	String getId(String kind) throws IOException {
 		skipWs();
 		if (!isFirstIdLetter(cur))
-			throw new RuntimeException("expected " + kind + " id");
+			error("expected " + kind + " id");
 		StringBuilder r = new StringBuilder();
 		do
 			r.append((char)cur);
@@ -175,7 +175,7 @@ public class CmlReader {
 		for (; isDigit(cur); next()) {
 			long n = r * 10 + cur - '0';
 			if (n < r)
-				throw new RuntimeException("long overflow");
+				error("long overflow");
 			r = n;
 		}
 		expectedNewLine();

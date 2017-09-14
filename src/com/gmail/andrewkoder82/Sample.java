@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.List;
+import static com.gmail.andrewkoder82.DomQuery.query;
 
 public class Sample {
 	public static void main(String[] params) {
@@ -15,8 +16,8 @@ public class Sample {
 				tPoint.fields.add("x");
 				tPoint.fields.add("y");
 				dom.root = new Dom.Struct(tPoint)
-					.setField("x", 10)
-					.setField("y", 20);
+					.set("x", 10)
+					.set("y", 20);
 				CmlWriter.write(dom, new OutputStreamWriter(System.out));				
 			}
 			{
@@ -31,12 +32,9 @@ public class Sample {
 					"  =p1"));
 
 				CmlWriter.write(d, new OutputStreamWriter(System.out));				
-				
-				Dom.Struct s = (Dom.Struct) d.root;
-				List<?> pts = (List<?>) s.getField("points");
-				Dom.Struct p0 = (Dom.Struct) pts.get(0);
-				assert((Long) p0.getField("y") == 42);
-				//TODO: create helper class cml(d.root)._("points")._(0)._("y")._int(-1)
+
+				for (DomQuery i: query(d.root).field("points"))
+					System.out.println("x=" + i.field("x").asInt(-1) + " y=" + i.field("y").asInt(-1));
 				
 			}
 		} catch (IOException e) {
