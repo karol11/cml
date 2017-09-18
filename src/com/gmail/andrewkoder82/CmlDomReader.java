@@ -5,11 +5,11 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class CmlReader {
+public class CmlDomReader {
 	
 	public static Dom read(Reader in) throws IOException {
 		Dom r = new Dom();
-		new CmlReader(r, in);
+		new CmlDomReader(r, in);
 		return r;
 	}
 	
@@ -17,7 +17,7 @@ public class CmlReader {
 	Dom dom;
 	Map<String, Dom.Struct> named;
 	
-	CmlReader(Dom dom, Reader in) throws IOException {
+	CmlDomReader(Dom dom, Reader in) throws IOException {
 		this.dom = dom;
 		this.stax = new CmlStaxReader(in);
 		dom.root = parseNode(stax.next());

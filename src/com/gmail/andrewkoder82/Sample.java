@@ -11,7 +11,7 @@ public class Sample {
 		try {
 			testStaxReader();
 			testWriter();
-			testReader();
+			testDomReader();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -85,8 +85,8 @@ public class Sample {
 		System.out.println(json.toString());
 	}
 
-	private static void testReader() throws IOException {
-		Dom d = CmlReader.read(new StringReader(
+	private static void testDomReader() throws IOException {
+		Dom d = CmlDomReader.read(new StringReader(
 			"Polygon\n"+
 			"name \"Test text\"\n"+
 			"points:\n"+
@@ -96,7 +96,7 @@ public class Sample {
 			"ordered:\n"+
 			"  =p1"));
 
-		CmlWriter.write(d, new OutputStreamWriter(System.out));				
+		CmlDomWriter.write(d, new OutputStreamWriter(System.out));				
 
 		for (DomQuery i: query(d.root).field("points"))
 			System.out.println("x=" + i.field("x").asInt(-1) + " y=" + i.field("y").asInt(-1));
@@ -110,6 +110,6 @@ public class Sample {
 		dom.root = new Dom.Struct(tPoint)
 			.set("x", 10)
 			.set("y", 20);
-		CmlWriter.write(dom, new OutputStreamWriter(System.out));				
+		CmlDomWriter.write(dom, new OutputStreamWriter(System.out));				
 	}
 }
