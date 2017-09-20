@@ -1,31 +1,31 @@
 #include <stdio.h>
 #include "dom.h"
 
-void dump(cml_variant *v) {
-	switch (cml_var_kind(v)) {
-	case CML_V_UNDEFINED: break;
-	case CML_V_INT: printf("%ld", cml_as_int(v, 0)); break;
-	case CML_V_STR: printf("'%s'", cml_as_str(v, "")); break;
-	case CML_V_ARRAY:
+void dump(cmld_var *v) {
+	switch (cmld_kind(v)) {
+	case CMLD_UNDEFINED: break;
+	case CMLD_INT: printf("%ld", cmld_as_int(v, 0)); break;
+	case CMLD_STR: printf("'%s'", cmld_as_str(v, "")); break;
+	case CMLD_ARRAY:
 		{
-			int i = -1, n = cml_get_count(v);
+			int i = -1, n = cmld_get_count(v);
 			printf("[");
 			while (++i < n) {
 				if (i) printf(",");
-				dump(cml_get_at(v, i));
+				dump(cmld_at(v, i));
 			}
 			printf("]");
 		}
-	case CML_V_STRUCT:
+	case CMLD_STRUCT:
 		{
-			cml_field *f = cml_enumerate_fields(cml_get_type(v));
-			const char *id = cml_get_name(v);
-			printf("{'$':'%s'", cml_type_name(cml_get_type(v)));
+			cmld_field *f = cmld_enumerate_fields(cmld_get_type(v));
+			const char *id = cmld_get_name(v);
+			printf("{'$':'%s'", cmld_type_name(cmld_get_type(v)));
 			if (id)
 				printf(",'#':'%s'", id);
-			for (; f; f = cml_next_field(f)) {
-				printf(",'%s':", cml_field_name(f));
-				dump(cml_peek_field(v, f));
+			for (; f; f = cmld_next_field(f)) {
+				printf(",'%s':", cmld_field_name(f));
+				dump(cmld_peek_field(v, f));
 			}
 			printf("}");
 		}
@@ -33,17 +33,17 @@ void dump(cml_variant *v) {
 }
 
 int main() {
-	cml_dom *dom = cml_alloc_dom();
+	cmld_dom *dom = cmld_alloc_dom();
 
-	cml_type *point = cml_add_type(dom, "point");
-	cml_field *px = cml_add_field(point, "x");
-	cml_field *py = cml_add_field(point, "y");
+	cmld_type *point = cmld_add_type(dom, "point");
+	cmld_field *px = cmld_add_field(point, "x");
+	cmld_field *py = cmld_add_field(point, "y");
 
-	cml_variant *root = cml_set_struct(cml_root(dom), point);
-	cml_set_int(cml_get_field(root, px), 5);
-	cml_set_int(cml_get_field(root, py), 42);
+	cmld_var *root = cmld_set_struct(cmld_root(dom), point);
+	cmld_set_int(cmld_get_field(root, px), 5);
+	cmld_set_int(cmld_get_field(root, py), 42);
 
-	dump(cml_root(dom));
+	dump(cmld_root(dom));
 
-	cml_free_dom(dom);
+	cmld_free_dom(dom);
 }
