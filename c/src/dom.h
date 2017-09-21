@@ -6,109 +6,110 @@
 //
 
 //
-// cmld_dom
+// d_dom
 // Represents Document Object Model been read or to be written to CML file.
 // Contains
 // - a root object,
 // - a directory of named objects and,
 // - type information describing structured types and its fields
 //
-typedef struct cmld_dom_tag cmld_dom;
+typedef struct d_dom_tag d_dom;
 
 //
 // Create a new DOM instance.
-// Ater been used it has to be disposed with cmld_free_dom call.
+// Ater been used it has to be disposed with d_free_dom call.
 //
-cmld_dom *cmld_alloc_dom();
+d_dom *d_alloc_dom();
 
 //
 // Destroys DOM and all its objects and type information.
 //
-void cmld_free_dom(cmld_dom *dom);
+void d_dispose_dom(d_dom *dom);
 
 //
-// ------------------ Methadata manipulation routines -------------
+// ------------------ Metadata manipulation routines -------------
 //
 
 //
-// cmld_type deines structured data types.
+// 'd_type' defines structured data types.
 // Each type has a name and a list of named fields.
-// Types defined in different DOMs event having the same name
-// are represented by different cmld_type structures.
+// Types of the same name defined in different DOMs
+// are represented by different d_type structures.
 //
-typedef struct cmld_type_tag cmld_type;
+typedef struct d_type_tag d_type;
 
 //
-// Returns an existing cmld_type by name, or NULL if none.
+// Returns an existing d_type by name, or NULL if none.
 //
-cmld_type *cmld_lookup_type(cmld_dom *dom, const char *name);
+d_type *d_lookup_type(d_dom *dom, const char *name);
 
 //
 // Returns the existing type or creates a new one.
 // There is no way to remove type from DOM.
 //
-cmld_type *cmld_add_type(cmld_dom *dom, const char *name);
+d_type *d_add_type(d_dom *dom, const char *name);
 
 //
 // Returns a type name.
-// Pointer is valid till cmld_free_dom called.
+// Result pointer is valid till d_free_dom called.
 //
-const char *cmld_type_name(cmld_type *type);
+const char *d_type_name(d_type *type);
 
 //
-// A cmld_field defines a named field of given type.
+// A d_field defines a named field of given type.
 // Fields of different types even having the same name are represented
-// by different cmld_field structures.
+// by different d_field structures.
 //
-typedef struct cmld_field_tag cmld_field;
+typedef struct d_field_tag d_field;
 
 //
 // Returns the existing field of given type, or NULL if no one.
 //
-cmld_field *cmld_lookup_field(cmld_type *type, const char *field_name);
+d_field *d_lookup_field(d_type *type, const char *field_name);
 
 //
 // Returns the existing field having this name or creates a new one.
-// There is no way to remove fields 
+// There is no way to remove fields from type.
 //
-cmld_field *cmld_add_field(cmld_type *type, const char *field_name);
+d_field *d_add_field(d_type *type, const char *field_name);
 
 //
 // Returns the field's name.
-// Pointer is valid untill cmld_free_dom called.
+// Pointer is valid untill d_free_dom called.
 //
-const char *cmld_field_name(cmld_field *field);
+const char *d_field_name(d_field *field);
 
 //
 // Iterating all fields of given type:
-// for (cmld_field *f = cmld_enumerate_fields(type); f; f = cmld_next_field(f))...
+// for (d_field *f = d_enumerate_fields(type); f; f = d_next_field(f))...
 // You should not add fields during iterations, because it can alter the iteration sequence.
-// The order of fields in type is undefined.
+// The order of fields in a type is unspecified.
 //
-cmld_field *cmld_enumerate_fields(cmld_type *type);
+d_field *d_enumerate_fields(d_type *type);
 
 //
-// A single step of iteration process. See cmld_enumerate_fields or details.
-// Returns NULL on end of list.
+// A single step of iteration process. See d_enumerate_fields for details.
+// Returns NULL on the end of list.
 //
-cmld_field *cmld_next_field(cmld_field *);
+d_field *d_next_field(d_field *);
 
 //
 // ------------------ Data Manipulation Routines -------------
 //
 
 //
-// cmld_var represents all types of data nodes.
+// 'd_var' represents all types of data nodes.
 // It can store integer, string, array, structure or be in an undefined state.
+// All data manipulation routines treat NULL d_var pointers as having CMLD_UNDEFINED value.
 //
-typedef struct cmld_var_tag cmld_var;
+typedef struct d_var_tag d_var;
 
 //
 // Returns the root data node of given dom.
 //
-cmld_var *cmld_root(cmld_dom *dom);
+d_var *d_root(d_dom *dom);
 
-enum cmld_kinds {
+enum d_kinds {
 	CMLD_UNDEFINED,
 	CMLD_INT,
 	CMLD_STR,
@@ -117,39 +118,38 @@ enum cmld_kinds {
 };
 
 //
-// Returns one of cmld_kinds values
-// defining the data stored in the data node.
+// Returns one of d_kinds values.
 //
-int cmld_kind(cmld_var *v);
+int d_kind(d_var *v);
 
 //
-// Makes cmld_var CMLD_UNDEFINED
+// Makes d_var CMLD_UNDEFINED
 //
-void cmld_undefine(cmld_var *v);
+void d_undefine(d_var *v);
 
 //
 // Makes this node CMLD_INT and sets its int64_t value.
 //
-void cmld_set_int(cmld_var *dst, long long val);
+void d_set_int(d_var *dst, long long val);
 
 //
 // Returns int64_t value stored in data node
 // or def_val if this node is not a CMLD_INT.
 //
-long long cmld_as_int(cmld_var *src, long long def_val);
+long long d_as_int(d_var *src, long long def_val);
 
 //
 // Sets node type to CMLD_STR and stores text in it.
 // The text is stored as copy in newly allocated buffer.
 //
-void cmld_set_str(cmld_var *dst, cmld_dom *dom, const char *val);
+void d_set_str(d_var *dst, d_dom *dom, const char *val);
 
 //
 // Returns a string value of given node if it is CMLD_STR or
 // def_val otherwise.
-// Returned pointer is valid till cmld_free_dom or cmld_gc call.
+// Returned pointer is valid till d_free_dom or d_gc call.
 //
-const char *cmld_as_str(cmld_var *src, const char *def_val);
+const char *d_as_str(d_var *src, const char *def_val);
 
 
 //
@@ -164,33 +164,33 @@ const char *cmld_as_str(cmld_var *src, const char *def_val);
 // If the size is non-zero, the new array is filled with CMLD_UNDEFINED nodes.
 // Returns dst.
 //
-cmld_var *cmld_set_array(cmld_var *dst, cmld_dom *dom, int size);
+d_var *d_set_array(d_var *dst, d_dom *dom, int size);
 
 //
 // Returns array size for CMLD_ARRAY nodes or 0 otherwise.
 //
-int cmld_get_count(cmld_var *array);
+int d_get_count(d_var *array);
 
 //
 // Returns the indexed array item. Or NULL for non-arrays.
 //
-cmld_var *cmld_at(cmld_var *array, int index);
+d_var *d_at(d_var *array, int index);
 
 //
 // Resizes array, adding 'count' items starting at 'at' index.
 // If reallocation takes place it is registered in given dom.
-// Array grows uses reserved gap, thus not all inserts causes reallocations.
-// cmld_insert invalidates all cmld_var pointers to array items.
+// Array grows using a reserved gap, thus not all inserts causes reallocations.
+// d_insert invalidates all d_var pointers to array items.
 // 'at' index should be within the range of array indexes.
 //
-int cmld_insert(cmld_var *array, cmld_dom *dom, int at, int count);
+int d_insert(d_var *array, d_dom *dom, int at, int count);
 
 //
 // Deletes 'count' items starting at 'at' index.
-// Invalidates all cmld_var pointers to array items.
+// Invalidates all d_var pointers to array items.
 // 'at' and 'at+count' indexes should be in the range of array indexes.
 //
-void cmld_delete(cmld_var *array, cmld_dom *dom, int at, int count);
+void d_delete(d_var *array, d_dom *dom, int at, int count);
 
 //
 // --------------- Data Manipulation Routines for Structures ----------
@@ -199,68 +199,78 @@ void cmld_delete(cmld_var *array, cmld_dom *dom, int at, int count);
 //
 // Creates a new struct and stores it in given node.
 //
-cmld_var *cmld_set_struct(cmld_var *dst, cmld_type *type);
+d_var *d_set_struct(d_var *dst, d_type *type);
 
 //
-// Returns the structure type descriptor.
+// Returns the struct type descriptor.
 //
-cmld_type *cmld_get_type(cmld_var *struc);
+d_type *d_get_type(d_var *struc);
 
 //
-// Returns the structure field. If no field in structure, returns NULL.
-// Useful for data acquistion: cmld_as_int(cmld_peek_field(my_struct, my_field), -1)
+// Returns the structure field.
+// If there are fields added to structure type since given instance is been created,
+// peeking such new fields returns NULL.
+// This is OK for data acquistion: d_as_int(d_peek_field(my_struct, my_field), -1)
 // This example returns -1 if:
 // - my_struct is null
 // - or not a structure
 // - or does not contain field my_field
 // - or if its field is not integer
 // - or field contains -1.
-// The cmld_peek_field can't be used to store data,
-// because cmld_set_int does nothing for NULL pointer.
-// This code won't work cmld_set_int(cmld_peek_field(my_struct, my_field), 42);
+// The d_peek_field can't be used to store data,
+// because d_set_int does nothing for NULL pointer.
+// This code has no effect: d_set_int(d_peek_field(my_struct, my_field), 42);
 //
-cmld_var *cmld_peek_field(cmld_var *struc, cmld_field *field);
+d_var *d_peek_field(d_var *struc, d_field *field);
 
 //
 // Returns the structure field.
-// If there are fields added to structure type since this instance created,
-// reallocates one, making sure the the fields presented.
-// If reallocated, invalidates all cmld_var referencing this structure fields.
-// Useful for data storing: cmld_set_int(cmld_get_field(my_struct, my_field), 42);
+// If there are fields added to structure type since given instance created,
+// the d_get_field will reallocate one, making sure all fields exist.
+// Reallocation invalidates all d_var referencing this structure fields.
+// The 'd_get_field' is useful for data storing:
+// d_set_int(d_get_field(my_struct, my_field), 42);
 //
-cmld_var *cmld_get_field(cmld_var *struc, cmld_field *field);
+d_var *d_get_field(d_var *struc, d_field *field);
 
 //
-// Returns structure id, that persists all struct lifetime.
-// Can be used
+// Returns structure id, that remains the same during this struct lifetime.
+// It can be used:
 // - to check against null reference
-// - to check if two cmld_vars reference the same structures.
-// - to check against maps and sets of structures for data traversing etc.
+// - to check if two d_vars reference the same structures.
+// - to check against maps and sets of structures for graph traversing etc.
+// Garbage collection kills unused structures making id invalid.
+// See d_gc for details.
 //
-void *cmld_get_id(cmld_var *struc);
+void *d_get_id(d_var *struc);
 
 //
 // Makes dst referencing the structure with given id.
 // This allows arbitrary data topology beyond the tree-like structures.
-// DOM and CML can deal event with structures having cycles.
+// The DOM and the CML format can deal with any topology, even having cycles
+// in reference graph.
 //
-cmld_var *cmld_set_ref(cmld_var *dst, void *src_id);
+d_var *d_set_ref(d_var *dst, void *src_id);
 
 //
-// Sets one-bit flag on structure.
+// Sets tag on structure.
 // This is useful for detecting cycles in graph traversing.
+// Tags go in the form of function pointers to establish convension
+// of using traversing function entry points as tags.
 //
-void cmld_tag(cmld_var *struc);
+typedef void (*d_tag)(void);
+void d_set_tag(d_var *struc, d_tag tag);
 
 //
-// Clears one-bit flag on structure
+// Gets tag.
+// use it this way if (d_get_tagged(my_var) == (d_tag) my_func)....
 //
-void cmld_untag(cmld_var *struc);
+d_tag d_get_tag(d_var *struc);
 
 //
-// Checks if one-bit flag is set on structure
+// Remove all tags tracing DOM starting at given d_var.
 //
-int cmld_is_tagged(cmld_var *struc);
+void d_untag(d_var *root);
 
 //
 // --------------------------- Name Manipulation Routines -----------------
@@ -268,20 +278,20 @@ int cmld_is_tagged(cmld_var *struc);
 
 //
 // Makes struct named.
-// If given struct had dad a name, old name is removed.
-// If this name had been assigned to a different struct, it becomes unnamed. 
+// If given struct had dad a name, the old name is removed.
+// If this name had been assigned to a different struct, it becomes unnamed.
 //
-void cmld_set_name(cmld_var *target, const char *name);
+void d_set_name(d_var *target, const char *name);
 
 //
 // Get struct by name.
 //
-cmld_var *cmld_get_named(cmld_dom *dom, const char *name);
+d_var *d_get_named(d_dom *dom, const char *name);
 
 //
 // Get struct name.
 //
-const char *cmld_get_name(cmld_var *target);
+const char *d_get_name(d_var *target);
 
 //
 // ------------------------ Garbage Collector
@@ -290,20 +300,27 @@ const char *cmld_get_name(cmld_var *target);
 //
 // Checks all allocaion made for given DOM,
 // and reclaims all memory inaccessible from series of references starting at root node.
-// It invalidates any cmld_vars stored outside dom.
+// It invalidates any d_vars stored outside dom.
 // It never reclaims type and field descriptors.
 // The 'marker' parameter (if not null) is a call-back function
-// that can cmld_gc_mark any additional structures as gc roots.
+// that can d_gc_mark any additional structures as gc roots
+// (to save needed structures that temporarily went out of root object hierarchy).
+// The 'on_dispose' parameter (if not null) is called each time
+// the GC tries to delete a structure. It can handle its id invalidation.
+// (to handle the invalidation of ids of structures that are been deleted).
 //
-void cmld_gc(
-	cmld_dom *dom,
+void d_gc(
+	d_dom *dom,
 	void (*marker)(void*context),
-	void *marker_context);
+	void *marker_context,
+	void (*on_dispose)(void *id, void*context),
+	void *on_dispose_context
+	);
 
 //
 // Marks the given struct as additional root in gc cycle.
-// Can't be called outside the gc cmld_gc marker punction.
+// Can't be called outside the gc d_gc marker punction.
 //
-void cmld_gc_mark(void *struct_id);
+void d_gc_mark(void *struct_id);
 
 #endif

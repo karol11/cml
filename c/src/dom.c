@@ -2,66 +2,67 @@
 #include <string.h>
 #include "dom.h"
 
-typedef struct cmld_struct_tag cmld_struct;
-typedef struct cmld_array_tag cmld_array;
+typedef struct d_struct_tag d_struct;
+typedef struct d_array_tag d_array;
 
-struct cmld_var_tag {
+struct d_var_tag {
 	int type;
 	union{
 		long long int_val;
 		const char *str_val;
-		cmld_struct *struct_val;
-		cmld_array *array_val;
+		d_struct *struct_val;
+		d_array *array_val;
 	};
 };
 
-struct cmld_field_tag {
+struct d_field_tag {
 	const char *name;
 	int index;
-	cmld_field *next;
+	d_field *next;
 };
 
-struct cmld_type_tag{
+struct d_type_tag{
 	const char *name;
-	cmld_dom *dom;
+	d_dom *dom;
 	int size;
-	cmld_field *fields;
-	cmld_type *next;
+	d_field *fields;
+	d_type *next;
 };
 
-struct cmld_array_tag {
+struct d_array_tag {
 	int size;
 	int allocated;
-	cmld_var *items;
+	d_var *items;
 };
 
-struct cmld_struct_tag {
-	cmld_type *type;
+struct d_struct_tag {
+	d_type *type;
 	const char *name;
-	cmld_array fields;
+	d_array fields;
+	d_tag tag;
 };
 
-struct cmld_dom_tag {
+struct d_dom_tag {
 	void *allocated;
-	cmld_array named;
-	cmld_var root;
-	cmld_type *types;
+	d_array named;
+	d_var root;
+	d_type *types;
 };
 
-static void *cmld_alloc(cmld_dom *dom, int size) {
+static void *d_alloc(d_dom *dom, int size) {
 	void **r = (void**) malloc(size + sizeof(void*));
 	*r = dom->allocated;
 	dom->allocated = (void*) r;
 	return r + 1;
 }
 
-static void init_array(cmld_array *arr) {
+static void init_array(d_array *arr) {
 	arr->size = arr->allocated = 0;
 	arr->items = 0;
 }
 
-static const char *make_str(cmld_dom *dom, const char *s) {
-	char *r = (char *) cmld_alloc(dom, strlen(s) + 1);
+static const char *make_str(d_dom *dom, const char *s) {
+	char *r = (char *) d_alloc(dom, strlen(s) + 1);
 	strcpy(r, s);
 	return r;
 }
@@ -72,30 +73,30 @@ static const char *make_md_str(const char *s) {
 	return r;
 }
 
-static int array_insert(cmld_array *a, cmld_dom *dom, int at, int count) {
+static int array_insert(d_array *a, d_dom *dom, int at, int count) {
 	if (a->size + count < a->allocated) {
 		if (at < a->size)
-			memmove(a->items + at + count, a->items + at, count * sizeof(cmld_var));
+			memmove(a->items + at + count, a->items + at, count * sizeof(d_var));
 	} else {
-		cmld_var *d = (cmld_var*) cmld_alloc(dom, (a->allocated = a->size + count + 16) * sizeof(cmld_var));
+		d_var *d = (d_var*) d_alloc(dom, (a->allocated = a->size + count + 16) * sizeof(d_var));
 		if (a->items) {
-			memcpy(d, a->items, at * sizeof(cmld_var));
-			memcpy(d + at + count, a->items + at, (a->size - at) * sizeof(cmld_var));
+			memcpy(d, a->items, at * sizeof(d_var));
+			memcpy(d + at + count, a->items + at, (a->size - at) * sizeof(d_var));
 		}
 		a->items = d;
 	}
 	a->size += count;
-	memset(a->items + at, 0, count * sizeof(cmld_var));
+	memset(a->items + at, 0, count * sizeof(d_var));
 	return at;
 }
 
-static void array_delete(cmld_array *a, cmld_dom *dom, int at, int count) {
-	memmove(a->items + at, a->items + at + count, (a->size - at - count) * sizeof(cmld_var));
+static void array_delete(d_array *a, d_dom *dom, int at, int count) {
+	memmove(a->items + at, a->items + at + count, (a->size - at - count) * sizeof(d_var));
 	a->size -= count;
 }
 
-cmld_dom *cmld_alloc_dom() {
-	cmld_dom *r = (cmld_dom*) malloc(sizeof(cmld_dom));
+d_dom *d_alloc_dom() {
+	d_dom *r = (d_dom*) malloc(sizeof(d_dom));
 	r->allocated = 0;
 	r->root.type = CMLD_UNDEFINED;
 	r->types = 0;
@@ -103,7 +104,7 @@ cmld_dom *cmld_alloc_dom() {
 	return r;
 }
 
-void cmld_free_dom(cmld_dom *dom) {
+void d_dispose_dom(d_dom *dom) {
 	void **i = (void **) dom->allocated;
 	while (i) {
 		void **n = (void**) *i;
@@ -111,12 +112,12 @@ void cmld_free_dom(cmld_dom *dom) {
 		i = n;
 	}
 	{
-		cmld_type *t = dom->types;
+		d_type *t = dom->types;
 		while (t) {
-			cmld_type *nt = t->next;
-			cmld_field *f = t->fields;
+			d_type *nt = t->next;
+			d_field *f = t->fields;
 			while (f) {
-				cmld_field *nf = f->next;
+				d_field *nf = f->next;
 				free((void*)f->name);
 				free(f);
 				f = nf;
@@ -129,8 +130,8 @@ void cmld_free_dom(cmld_dom *dom) {
 	free(dom);
 }
 
-cmld_type *cmld_lookup_type(cmld_dom *dom, const char *name) {
-	cmld_type *t = dom->types;
+d_type *d_lookup_type(d_dom *dom, const char *name) {
+	d_type *t = dom->types;
 	for (; t; t = t->next) {
 		if (strcmp(t->name, name) == 0)
 			return t;
@@ -138,11 +139,11 @@ cmld_type *cmld_lookup_type(cmld_dom *dom, const char *name) {
 	return 0;
 }
 
-cmld_type *cmld_add_type(cmld_dom *dom, const char *name) {
-	cmld_type *t = cmld_lookup_type(dom, name);
+d_type *d_add_type(d_dom *dom, const char *name) {
+	d_type *t = d_lookup_type(dom, name);
 	if (t)
 		return t;
-	t = (cmld_type*) malloc(sizeof(cmld_type));
+	t = (d_type*) malloc(sizeof(d_type));
 	t->name = make_md_str(name);
 	t->size = 0;
 	t->next = dom->types;
@@ -152,8 +153,8 @@ cmld_type *cmld_add_type(cmld_dom *dom, const char *name) {
 	return t;
 }
 
-cmld_field *cmld_lookup_field(cmld_type *type, const char *name) {
-	cmld_field * r = type->fields;
+d_field *d_lookup_field(d_type *type, const char *name) {
+	d_field * r = type->fields;
 	for (; r; r = r->next) {
 		if (strcmp(r->name, name) == 0)
 			return r;
@@ -161,11 +162,11 @@ cmld_field *cmld_lookup_field(cmld_type *type, const char *name) {
 	return 0;
 }
 
-cmld_field *cmld_add_field(cmld_type *type, const char *name) {
-	cmld_field * r = cmld_lookup_field(type, name);
+d_field *d_add_field(d_type *type, const char *name) {
+	d_field * r = d_lookup_field(type, name);
 	if (r)
 		return r;
-	r = (cmld_field*) malloc(sizeof(cmld_field));
+	r = (d_field*) malloc(sizeof(d_field));
 	r->name = make_md_str(name);
 	r->index = type->size++;
 	r->next = type->fields;
@@ -173,34 +174,34 @@ cmld_field *cmld_add_field(cmld_type *type, const char *name) {
 	return r;
 }
 
-cmld_field *cmld_enumerate_fields(cmld_type *type) {
+d_field *d_enumerate_fields(d_type *type) {
 	return type->fields;
 }
 
-cmld_field *cmld_next_field(cmld_field *f) {
+d_field *d_next_field(d_field *f) {
 	return f->next;
 }
 
-const char *cmld_type_name(cmld_type *type) {
+const char *d_type_name(d_type *type) {
 	return type ? type->name : 0;
 }
 
-const char *cmld_field_name(cmld_field *field) {
+const char *d_field_name(d_field *field) {
 	return field ? field->name : 0;
 }
 
 
-cmld_type *cmld_get_type(cmld_var *s) {
-	return s && s->type == CMLD_STRUCT ? (cmld_type*)(((size_t)s->struct_val->type) & ~1) : 0;
+d_type *d_get_type(d_var *s) {
+	return s && s->type == CMLD_STRUCT ? s->struct_val->type : 0;
 }
 
-cmld_var *cmld_peek_field(cmld_var *s, cmld_field *field) {
+d_var *d_peek_field(d_var *s, d_field *field) {
 	return s && s->type == CMLD_STRUCT && s->struct_val->fields.size > field->index ?
 		s->struct_val->fields.items + field->index :
 		0;
 }
 
-cmld_var *cmld_get_field(cmld_var *s, cmld_field *field) {
+d_var *d_get_field(d_var *s, d_field *field) {
 	if (!s || s->type != CMLD_STRUCT)
 		return 0;
 	if (s->struct_val->fields.size != s->struct_val->type->size)
@@ -212,42 +213,42 @@ cmld_var *cmld_get_field(cmld_var *s, cmld_field *field) {
 	return s->struct_val->fields.items + field->index;
 }
 
-cmld_var *cmld_at(cmld_var *s, int index) {
+d_var *d_at(d_var *s, int index) {
 	return s && s->type == CMLD_ARRAY && s->array_val->size < index ?
 		s->array_val->items + index :
 		0;
 }
 
-int cmld_get_count(cmld_var *s) {
+int d_get_count(d_var *s) {
 	return s && s->type == CMLD_ARRAY ? s->array_val->size : 0;
 }
 
-long long cmld_as_int(cmld_var *v, long long def_val) {
+long long d_as_int(d_var *v, long long def_val) {
 	return v && v->type == CMLD_INT ? v->int_val : def_val;
 }
 
-const char *cmld_as_str(cmld_var *v, const char *def_val) {
+const char *d_as_str(d_var *v, const char *def_val) {
 	return v && v->type == CMLD_STR ? v->str_val : def_val;
 }
 
-void cmld_set_int(cmld_var *dst, long long val) {
+void d_set_int(d_var *dst, long long val) {
 	if (dst) {
 		dst->type = CMLD_INT;
 		dst->int_val = val;
 	} 
 }
 
-void cmld_set_str(cmld_var *dst, cmld_dom *dom, const char *val) {
+void d_set_str(d_var *dst, d_dom *dom, const char *val) {
 	if (dst) {
 		dst->type = CMLD_STR;
 		dst->str_val = make_str(dom, val);
 	}
 }
 
-cmld_var *cmld_set_array(cmld_var *dst, cmld_dom *dom, int size) {
+d_var *d_set_array(d_var *dst, d_dom *dom, int size) {
 	if (dst) {
 		dst->type = CMLD_ARRAY;
-		dst->array_val = (cmld_array*) cmld_alloc(dom, sizeof(cmld_array));
+		dst->array_val = (d_array*) d_alloc(dom, sizeof(d_array));
 		init_array(dst->array_val);
 		if (size > 0)
 			array_insert(dst->array_val, dom, 0, size);
@@ -255,56 +256,66 @@ cmld_var *cmld_set_array(cmld_var *dst, cmld_dom *dom, int size) {
 	return dst;
 }
 
-cmld_var *cmld_set_struct(cmld_var *dst, cmld_type *type) {
+d_var *d_set_struct(d_var *dst, d_type *type) {
 	if (dst) {
 		dst->type = CMLD_STRUCT;
-		dst->struct_val = (cmld_struct*) cmld_alloc(type->dom, sizeof(cmld_struct));
+		dst->struct_val = (d_struct*) d_alloc(type->dom, sizeof(d_struct));
 		dst->struct_val->name = 0;
 		dst->struct_val->type = type;
+		dst->struct_val->tag = 0;
 		init_array(&dst->struct_val->fields);
 	}
 	return dst;
 }
 
-cmld_var *cmld_set_ref(cmld_var *dst, void *src_id) {
+d_var *d_set_ref(d_var *dst, void *src_id) {
 	if (dst) {
 		dst->type = CMLD_STRUCT;
-		dst->struct_val = (cmld_struct*) src_id;
+		dst->struct_val = (d_struct*) src_id;
 	}
 	return dst;
 }
 
-void *cmld_get_id(cmld_var *s) {
+void *d_get_id(d_var *s) {
 	return s && s->type == CMLD_STRUCT ? s->struct_val : 0;
 }
 
-void cmld_tag(cmld_var *s) {
+void d_set_tag(d_var *s, d_tag tag) {
 	if (s && s->type == CMLD_STRUCT)
-		*(size_t*)s->struct_val->type |= 1;
-}
-void cmld_untag(cmld_var *s) {
-	if (s && s->type == CMLD_STRUCT)
-		*(size_t*)s->struct_val->type &= ~1;
+		s->struct_val->tag = tag;
 }
 
-int cmld_is_tagged(cmld_var *s) {
-	return s && s->type == CMLD_STRUCT ? *(size_t*)s->struct_val->type & 1 : 0;
+d_tag d_get_tag(d_var *s) {
+	return s && s->type == CMLD_STRUCT ? s->struct_val->tag : 0;
 }
 
-void cmld_undefine(cmld_var *v) {
+void d_untag(d_var *v) {
+	if (v->type == CMLD_ARRAY) {
+		int c = v->array_val->size + 1;
+		for (v = v->array_val->items; --c;)
+			d_untag(v++);
+	} else if (v->type == CMLD_STRUCT && v->struct_val->tag) {
+		int c = v->struct_val->fields.size + 1;
+		v->struct_val->tag = 0;
+		for (v = v->struct_val->fields.items; --c;)
+			d_untag(v++);
+	}
+}
+
+void d_undefine(d_var *v) {
 	if (v)
 		v->type = CMLD_UNDEFINED;
 }
 
-int cmld_kind(cmld_var *v) {
+int d_kind(d_var *v) {
 	return v ? v->type : CMLD_UNDEFINED;
 }
 
-cmld_var *cmld_root(cmld_dom *dom) {
+d_var *d_root(d_dom *dom) {
 	return &dom->root;
 }
 
-static int get_named_index(cmld_dom *dom, const char *name) {
+static int get_named_index(d_dom *dom, const char *name) {
 	int i = dom->named.size;
 	while (--i >= 0)
 		if (strcmp(dom->named.items[i].struct_val->name, name) == 0)
@@ -312,18 +323,18 @@ static int get_named_index(cmld_dom *dom, const char *name) {
 	return -1;
 }
 
-cmld_var *cmld_get_named(cmld_dom *dom, const char *name) {
+d_var *d_get_named(d_dom *dom, const char *name) {
 	int i = get_named_index(dom, name);
 	return i < 0 ? 0 : &dom->named.items[i];
 }
 
-const char *cmld_get_name(cmld_var *target) {
+const char *d_get_name(d_var *target) {
 	return target && target->type == CMLD_STRUCT ? target->struct_val->name : 0;
 }
-void cmld_set_name(cmld_var *struc, const char *name) {
+void d_set_name(d_var *struc, const char *name) {
 	if (struc && struc->type == CMLD_STRUCT) {
-		cmld_struct* target = struc->struct_val;
-		cmld_dom *dom = target->type->dom;
+		d_struct* target = struc->struct_val;
+		d_dom *dom = target->type->dom;
 		int my_prev_name = target->name ? get_named_index(target->type->dom, target->name) : -1;
 		int old_name_bind = get_named_index(dom, name);
 		if (my_prev_name < 0) {
@@ -333,7 +344,7 @@ void cmld_set_name(cmld_var *struc, const char *name) {
 				dom->named.items[i].struct_val = target;
 				target->name = make_str(dom, name);
 			} else {
-				cmld_struct *old = dom->named.items[old_name_bind].struct_val;
+				d_struct *old = dom->named.items[old_name_bind].struct_val;
 				target->name = old->name;
 				old->name = 0;
 				dom->named.items[old_name_bind].struct_val = target;
@@ -342,7 +353,7 @@ void cmld_set_name(cmld_var *struc, const char *name) {
 			if (old_name_bind < 0) {
 				target->name = make_str(dom, name);
 			} else {
-				cmld_struct *old = dom->named.items[old_name_bind].struct_val;
+				d_struct *old = dom->named.items[old_name_bind].struct_val;
 				if (old != target) {
 					target->name = old->name;
 					old->name = 0;
@@ -353,61 +364,65 @@ void cmld_set_name(cmld_var *struc, const char *name) {
 	}
 }
 
-int cmld_insert(cmld_var *arr, cmld_dom *dom, int at, int count) {
+int d_insert(d_var *arr, d_dom *dom, int at, int count) {
 	return arr && arr->type == CMLD_ARRAY ? array_insert(arr->array_val, dom, at, count) : -1;
 }
-void cmld_delete(cmld_var *arr, cmld_dom *dom, int at, int count) {
+void d_delete(d_var *arr, d_dom *dom, int at, int count) {
 	if (arr && arr->type == CMLD_ARRAY)
 		array_delete(arr->array_val, dom, at, count);
 }
 
-void cmld_tag(cmld_var *struc);
-void cmld_untag(cmld_var *struc);
-int cmld_is_tagged(cmld_var *struc);
-
-
-static void mark(cmld_var *i) {
+static int gc_visited(void *block) {
+	size_t prev = ((size_t*)block)[-1];
+	if ((prev & 1) == 0)
+		((size_t*)block)[-1] = prev | 1;
+	return prev & 1;
+}
+static void mark(d_var *i) {
 	if (!i)
 		return;
 	switch (i->type) {
 	case CMLD_STR:
-		((size_t*)i->str_val)[-1] |= 1;
+		gc_visited((void*) i->str_val);
 		break;
 	case CMLD_ARRAY:
-		if ((((size_t*)i->array_val)[-1] & 1) == 0) {
+		if (!gc_visited(i->array_val)) {
 			int cnt = i->array_val->size + 1;
-			((size_t*)i->array_val)[-1] |= 1;
 			for (i = i->array_val->items; --cnt; i++)
 				mark(i);
 		}
 		break;
 	case CMLD_STRUCT:
-		cmld_gc_mark(i->struct_val);
+		d_gc_mark(i->struct_val);
 		break;
 	default:
 		break;
 	}
 }
 
-void cmld_gc_mark(void *struct_id) {
-	cmld_struct *s = (cmld_struct*) struct_id;
-	if ((((size_t*)s)[-1] & 1) == 0) {
-		((size_t*)s)[-1] |= 1;
+void d_gc_mark(void *struct_id) {
+	d_struct *s = (d_struct*) struct_id;
+	if (!gc_visited(s)) {
 		if (s->name) {
-			cmld_dom *dom = s->type->dom;
+			d_dom *dom = s->type->dom;
 			dom->named.items[dom->named.size++].struct_val = s;
-			((size_t*)s->name)[-1] |= 1;
+			gc_visited((void*)s->name);
 		}
 		{
-			cmld_var *i = s->fields.items;
+			d_var *i = s->fields.items;
 			int cnt = s->fields.size + 1;
+			if (i)
+				gc_visited(i);
 			for (; --cnt; i++)
 				mark(i);
+
 		}
 	}
 }
 
-void cmld_gc(cmld_dom *dom, void (*marker)(void*context), void *marker_context)
+void d_gc(d_dom *dom,
+	void (*marker)(void*context), void *marker_context,
+	void (*on_dispose)(void *id, void*context), void *on_dispose_context)
 {
 	dom->named.size = 0;
 	mark(&dom->root);
@@ -415,17 +430,19 @@ void cmld_gc(cmld_dom *dom, void (*marker)(void*context), void *marker_context)
 		marker(marker_context);
 	{
 		size_t **p = (size_t**) &dom->allocated;
-		for (;;) {
-			size_t *c = *p;
-			if (!*c)
-				break;
-			if (*c & 1) {
-				*c &= ~1;
-				p = (size_t**) *p;
+		size_t *c = *p;
+		while (c) {
+			size_t n = *c;
+			if (n & 1) {
+				*c = n &= ~1;
+				p = (size_t**) c;
 			} else {
-				*p = (size_t*) *c;
+				*p = (size_t*) n;
+				if (on_dispose)
+					on_dispose(c, on_dispose_context);
 				free(c);
 			}
+			c = (size_t*) n;
 		}
 	}
 }
