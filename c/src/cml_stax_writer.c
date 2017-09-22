@@ -17,11 +17,6 @@ static int put_s(cml_stax_writer *w, const char *s) {
 	return 1;
 }
 
-enum cmlw_error_codes {
-	CMLW_PUTC_ERROR = -1,
-	CMLW_UNEXPECTED_FIELD = -2,
-};
-
 static int write_head(cml_stax_writer *w, const char *field) {
 	int i = w->depth + 1;
 	while (--i) {

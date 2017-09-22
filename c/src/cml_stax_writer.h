@@ -9,6 +9,11 @@ cml_stax_writer *cml_create_writer(
 
 void cml_dispose_writer(cml_stax_writer *);
 
+enum cmlw_error_codes {
+	CMLW_PUTC_ERROR = -1,
+	CMLW_UNEXPECTED_FIELD = -2,
+};
+
 int cml_write_int(cml_stax_writer *writer, const char *field, long long value);
 int cml_write_str(cml_stax_writer *writer, const char *field, const char *value);
 int cml_write_array(cml_stax_writer *writer, const char *field);
