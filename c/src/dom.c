@@ -105,29 +105,31 @@ d_dom *d_alloc_dom() {
 }
 
 void d_dispose_dom(d_dom *dom) {
-	void **i = (void **) dom->allocated;
-	while (i) {
-		void **n = (void**) *i;
-		free(i);
-		i = n;
-	}
-	{
-		d_type *t = dom->types;
-		while (t) {
-			d_type *nt = t->next;
-			d_field *f = t->fields;
-			while (f) {
-				d_field *nf = f->next;
-				free((void*)f->name);
-				free(f);
-				f = nf;
-			}
-			free((void*)t->name);
-			free(t);
-			t = nt;
+	if (dom) {
+		void **i = (void **) dom->allocated;
+		while (i) {
+			void **n = (void**) *i;
+			free(i);
+			i = n;
 		}
+		{
+			d_type *t = dom->types;
+			while (t) {
+				d_type *nt = t->next;
+				d_field *f = t->fields;
+				while (f) {
+					d_field *nf = f->next;
+					free((void*)f->name);
+					free(f);
+					f = nf;
+				}
+				free((void*)t->name);
+				free(t);
+				t = nt;
+			}
+		}
+		free(dom);
 	}
-	free(dom);
 }
 
 d_type *d_lookup_type(d_dom *dom, const char *name) {

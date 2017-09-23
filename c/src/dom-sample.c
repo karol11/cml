@@ -3,6 +3,7 @@
 #include "cml_dom_writer.h"
 #include "string_builder.h"
 #include "cml_stax_reader.h"
+#include "cml_dom_reader.h"
 
 void dump(d_var *v) {
 	switch (d_kind(v)) {
@@ -50,6 +51,9 @@ int getc_asciiz(void *s) {
 	return *((*(char**)s)++);
 }
 
+void reader_reporter(const char *error, int line_num, int char_pos, void *unused) {
+	printf("error %s at %d:%d", error, line_num, char_pos);
+}
 
 int main() {
 	d_dom *dom = d_alloc_dom();
@@ -101,6 +105,14 @@ int main() {
 			}
 		}
 		cml_dispose_reader(rd);
+
+		s = sb_get_str(&sb);
+		{
+			d_dom *b = cml_read(getc_asciiz, (void*)&s, reader_reporter, 0);
+			dump(d_root(b));
+			d_dispose_dom(b);
+		}
+
 		sb_dispose(&sb);
 	}
 
