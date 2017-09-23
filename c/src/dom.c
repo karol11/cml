@@ -39,7 +39,7 @@ struct d_struct_tag {
 	d_type *type;
 	const char *name;
 	d_array fields;
-	d_tag tag;
+	size_t tag;
 };
 
 struct d_dom_tag {
@@ -282,12 +282,12 @@ void *d_get_id(d_var *s) {
 	return s && s->type == CMLD_STRUCT ? s->struct_val : 0;
 }
 
-void d_set_tag(d_var *s, d_tag tag) {
+void d_set_tag(d_var *s, size_t tag) {
 	if (s && s->type == CMLD_STRUCT)
 		s->struct_val->tag = tag;
 }
 
-d_tag d_get_tag(d_var *s) {
+size_t d_get_tag(d_var *s) {
 	return s && s->type == CMLD_STRUCT ? s->struct_val->tag : 0;
 }
 

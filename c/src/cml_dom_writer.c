@@ -5,11 +5,17 @@
 
 char id_buf[10];
 
+enum node_states {
+	N_VISITED = 1,
+	N_DOUBLE_REF,
+	N_WRITTEN
+};
+
 static const char *extract_id(d_var *v) {
 	const char *name = d_get_name(v);
 	if (name)
 		return name;
-	if (d_get_tag(v) == (d_tag) cml_write)
+	if (d_get_tag(v) == N_VISITED)
 		return 0;
 	sprintf(id_buf, "$%x", d_get_id(v));
 	return id_buf;
@@ -36,14 +42,14 @@ static int traverse(cml_stax_writer *w, d_var *v, const char *field) {
 	case CMLD_STRUCT:
 		if (!d_get_id(v))
 			return cml_write_ref(w, field, "$");
-		else if (d_get_tag(v) == (d_tag)traverse) {
+		else if (d_get_tag(v) == N_WRITTEN) {
 			return cml_write_ref(w, field, extract_id(v));
 		} else {
 			d_field *f = d_enumerate_fields(d_get_type(v));
 			int prev_state = cml_write_struct(w, field, d_type_name(d_get_type(v)), extract_id(v));
 			if (prev_state < 0)
 				return prev_state;
-			d_set_tag(v, (d_tag)traverse);
+			d_set_tag(v, N_WRITTEN);
 			for (; f; f = d_next_field(f)) {
 				int r = traverse(w, d_peek_field(v, f), d_field_name(f));
 				if (r < 0)
@@ -62,12 +68,12 @@ static void check_multi_ref(d_var *v) {
 		while (++i < n)
 			check_multi_ref(d_at(v, i));
 	} else if (k == CMLD_STRUCT) {
-		d_tag t = d_get_tag(v);
-		if (t == (d_tag)cml_write)
-			d_set_tag(v, (d_tag) check_multi_ref);
+		size_t t = d_get_tag(v);
+		if (t == N_VISITED)
+			d_set_tag(v, N_DOUBLE_REF);
 		else if (t == 0) {
 			d_field *f = d_enumerate_fields(d_get_type(v));
-			d_set_tag(v, (d_tag) cml_write);
+			d_set_tag(v, N_VISITED);
 			for (; f; f = d_next_field(f))
 				check_multi_ref(d_peek_field(v, f));
 		}

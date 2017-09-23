@@ -109,6 +109,11 @@ typedef struct d_var_tag d_var;
 //
 d_var *d_root(d_dom *dom);
 
+//
+// Returns the node content kind - one of d_kinds values.
+//
+int d_kind(d_var *v);
+
 enum d_kinds {
 	CMLD_UNDEFINED,
 	CMLD_INT,
@@ -118,17 +123,12 @@ enum d_kinds {
 };
 
 //
-// Returns one of d_kinds values.
-//
-int d_kind(d_var *v);
-
-//
-// Makes d_var CMLD_UNDEFINED
+// Makes d_var UNDEFINED
 //
 void d_undefine(d_var *v);
 
 //
-// Makes this node CMLD_INT and sets its int64_t value.
+// Makes this node INT and sets its int64_t value.
 //
 void d_set_int(d_var *dst, long long val);
 
@@ -208,7 +208,7 @@ d_type *d_get_type(d_var *struc);
 
 //
 // Returns the structure field.
-// If there are fields added to structure type since given instance is been created,
+// If there are fields added to structure type since given instance has been created,
 // peeking such new fields returns NULL.
 // This is OK for data acquistion: d_as_int(d_peek_field(my_struct, my_field), -1)
 // This example returns -1 if:
@@ -220,6 +220,7 @@ d_type *d_get_type(d_var *struc);
 // The d_peek_field can't be used to store data,
 // because d_set_int does nothing for NULL pointer.
 // This code has no effect: d_set_int(d_peek_field(my_struct, my_field), 42);
+// For storing data use d_get_field instead.
 //
 d_var *d_peek_field(d_var *struc, d_field *field);
 
@@ -238,7 +239,7 @@ d_var *d_get_field(d_var *struc, d_field *field);
 // It can be used:
 // - to check against null reference
 // - to check if two d_vars reference the same structures.
-// - to check against maps and sets of structures for graph traversing etc.
+// - to check against maps<> and sets<> of structures for graph traversing etc.
 // Garbage collection kills unused structures making id invalid.
 // See d_gc for details.
 //
@@ -255,17 +256,13 @@ d_var *d_set_ref(d_var *dst, void *src_id);
 //
 // Sets tag on structure.
 // This is useful for detecting cycles in graph traversing.
-// Tags go in the form of function pointers to establish convension
-// of using traversing function entry points as tags.
 //
-typedef void (*d_tag)(void);
-void d_set_tag(d_var *struc, d_tag tag);
+void d_set_tag(d_var *struc, size_t tag);
 
 //
 // Gets tag.
-// use it this way if (d_get_tagged(my_var) == (d_tag) my_func)....
 //
-d_tag d_get_tag(d_var *struc);
+size_t d_get_tag(d_var *struc);
 
 //
 // Remove all tags tracing DOM starting at given d_var.
