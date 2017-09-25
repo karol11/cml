@@ -17,7 +17,7 @@ static const char *extract_id(d_var *v) {
 		return name;
 	if (d_get_tag(v) == N_VISITED)
 		return 0;
-	sprintf(id_buf, "$%x", d_get_id(v));
+	sprintf(id_buf, "$%p", d_get_id(v));
 	return id_buf;
 }
 

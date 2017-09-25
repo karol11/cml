@@ -198,7 +198,7 @@ d_type *d_get_type(d_var *s) {
 }
 
 d_var *d_peek_field(d_var *s, d_field *field) {
-	return s && s->type == CMLD_STRUCT && s->struct_val->fields.size > field->index ?
+	return s && s->type == CMLD_STRUCT && field->index < s->struct_val->fields.size ?
 		s->struct_val->fields.items + field->index :
 		0;
 }
@@ -216,7 +216,7 @@ d_var *d_get_field(d_var *s, d_field *field) {
 }
 
 d_var *d_at(d_var *s, int index) {
-	return s && s->type == CMLD_ARRAY && s->array_val->size < index ?
+	return s && s->type == CMLD_ARRAY && index < s->array_val->size ?
 		s->array_val->items + index :
 		0;
 }

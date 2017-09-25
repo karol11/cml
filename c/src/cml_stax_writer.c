@@ -52,7 +52,7 @@ int cml_write_int(cml_stax_writer *w, const char *field, long long value) {
 	int r = write_head(w, field);
 	if (r < 0)
 		return r;
-	sprintf(buffer,"%ld", value);
+	sprintf(buffer,"%lld", value);
 	if (!put_s(w, buffer))
 		return CMLW_PUTC_ERROR;
 	return w->putc('\n', w->putc_context) ? 0 : CMLW_PUTC_ERROR;
