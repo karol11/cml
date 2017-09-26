@@ -8,7 +8,7 @@
 void dump(d_var *v) {
 	switch (d_kind(v)) {
 	case CMLD_UNDEFINED: printf("undefined"); break;
-	case CMLD_INT: printf("%ld", d_as_int(v, 0)); break;
+	case CMLD_INT: printf("%lld", d_as_int(v, 0)); break;
 	case CMLD_STR: printf("'%s'", d_as_str(v, "")); break;
 	case CMLD_ARRAY:
 		{
@@ -91,7 +91,7 @@ int main() {
 			if (*cmlr_field(rd))
 				printf(",'%s':", cmlr_field(rd));
 			switch (r) {
-			case CMLR_INT: printf("%ld", cmlr_int(rd)); break;
+			case CMLR_INT: printf("%lld", cmlr_int(rd)); break;
 			case CMLR_STRING: printf("'%s'", cmlr_str(rd)); break;
 			case CMLR_START_STRUCT:
 				printf("{'$':'%s'", cmlr_type(rd));

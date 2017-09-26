@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
+#include "tests.h"
 #include "string_builder.h"
 
 void sb_init(string_builder *b) {
-	b->pos = b->start = (char*) malloc(5);
-	b->end = b->start + 5;
+	b->pos = b->start = (char*) malloc(16);
+	b->end = b->start + 16;
 }
 void sb_dispose(string_builder *b) {
 	free(b->start);
@@ -16,7 +17,7 @@ const char *sb_get_str(string_builder *b) {
 void sb_clear(string_builder *b) {
 	b->pos = b->start;
 }
-void sb_append(char c, string_builder *b) {
+void sb_append(string_builder *b, char c) {
 	*b->pos = c;
 	if (++b->pos == b->end) {
 		int old_size = b->end - b->start;

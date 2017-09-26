@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "tests.h"
 #include "dom.h"
 
 typedef struct d_struct_tag d_struct;

@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "string_builder_test.h"
+#include "dom_test.h"
+
+#undef malloc
+#undef free
+
+#define MALLOCS_MAX 1024
+int *malloc_ids[MALLOCS_MAX+1];
+int malloc_numerator = 0;
+int allocs_cnt = 0;
+
+void *test_malloc(size_t size) {
+	int *r = (int*) malloc(size + sizeof(int));
+	*r = malloc_numerator;
+	malloc_ids[malloc_numerator] = r;
+	if (malloc_numerator++ == MALLOCS_MAX)
+		fail("allock overflow");
+	allocs_cnt++;
+	return r + 1;
+}
+
+void test_free(void *p) {
+	int *r = (int*) p;
+	if (r[-1] >= malloc_numerator || malloc_ids[r[-1]] == 0)
+		fail("double disposal");
+	malloc_ids[r[-1]] = 0;
+	allocs_cnt--;
+	free(r - 1);
+}
+
+void fail(const char *s)
+{
+	printf("error %s", s);
+	exit(-1);
+}
+
+void main() {
+	string_builder_test();
+	dom_test();
+	if (allocs_cnt) {
+		int i = malloc_numerator;
+		printf("%d leaks\n", allocs_cnt);
+		while (--i >= 0) {
+			if (malloc_ids[i])
+				printf("leaked alloc#%d\n", *malloc_ids[i]);
+		}
+	}
+}

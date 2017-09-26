@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "tests.h"
 #include "cml_stax_reader.h"
 #include "string_builder.h"
 
@@ -101,7 +102,7 @@ static void get_id(cml_stax_reader *r, string_builder *s, const char *err) {
 		error(r, err);
 	else {
 		do
-			sb_append(c, s);
+			sb_append(s, c);
 		while (is_id_letter(c = next_char(r)));
 	}
 }
@@ -224,14 +225,14 @@ int cmlr_next(cml_stax_reader *r) {
 			if (c == '"') {
 				c = next_char(r);
 				if (c == '"')
-					sb_append('\"', &r->str);
+					sb_append(&r->str, '\"');
 				else
 					break;
 			} else if (!c) {
 				error(r, "string not terminated");
 				return CMLR_ERROR;
 			} else
-				sb_append(c, &r->str);
+				sb_append(&r->str, c);
 		}
 		expected_new_line(r);
 		result = CMLR_STRING;

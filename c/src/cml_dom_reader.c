@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "cml_dom_writer.h"
 #include "dom.h"
 #include "cml_stax_reader.h"
 #include "cml_dom_reader.h"

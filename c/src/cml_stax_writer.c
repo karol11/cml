@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "tests.h"
 #include "cml_stax_writer.h"
 
 struct cml_stax_writer_tag {
