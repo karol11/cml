@@ -17,7 +17,7 @@ void *test_malloc(size_t size) {
 	*r = malloc_numerator;
 	malloc_ids[malloc_numerator] = r;
 	if (malloc_numerator++ == MALLOCS_MAX)
-		fail("allock overflow");
+		fail("alloc overflow");
 	allocs_cnt++;
 	return r + 1;
 }
@@ -37,15 +37,23 @@ void fail(const char *s)
 	exit(-1);
 }
 
-void main() {
-	string_builder_test();
-	dom_test();
+void perform_test(void (*test)(), const char *name) {
+	printf("test: %s ", name);
+	test();
+	printf(" ok\n");
 	if (allocs_cnt) {
 		int i = malloc_numerator;
-		printf("%d leaks\n", allocs_cnt);
 		while (--i >= 0) {
 			if (malloc_ids[i])
 				printf("leaked alloc#%d\n", *malloc_ids[i]);
 		}
+		printf("%d leaks\n", allocs_cnt);
+		fail("leaks!");
 	}
+}
+
+void main() {
+	perform_test(string_builder_test, "string builder");
+	perform_test(dom_test, "dom");
+	printf("done\n");
 }

@@ -10,7 +10,11 @@ void sb_puts(string_builder *b, const char *s) {
 		sb_append(b, *s++);
 }
 
-void to_string(string_builder *r, d_var *v) {
+void to_string(string_builder *r, d_var *v, const char *field) {
+	if (d_kind(v) != CMLD_UNDEFINED && field) {
+		sb_puts(r, field);
+		sb_append(r, ':');
+	}
 	switch (d_kind(v)) {
 	case CMLD_UNDEFINED: break;
 	case CMLD_INT:
@@ -22,7 +26,7 @@ void to_string(string_builder *r, d_var *v) {
 		break;
 	case CMLD_STR:
 		sb_append(r, '"');
-		sb_pits(r, d_as_str(v, ""));
+		sb_puts(r, d_as_str(v, ""));
 		sb_append(r, '"');		
 		break;
 	case CMLD_ARRAY:
@@ -31,10 +35,11 @@ void to_string(string_builder *r, d_var *v) {
 			sb_append(r, '[');
 			while (++i < n) {
 				if (i) sb_append(r, ',');
-				dump(r, d_at(v, i));
+				to_string(r, d_at(v, i), 0);
 			}
 			sb_append(r, ']');
 		}
+		break;
 	case CMLD_STRUCT:
 		if (!d_get_id(v))
 			sb_puts(r, "null");
@@ -42,53 +47,52 @@ void to_string(string_builder *r, d_var *v) {
 			d_field *f = d_enumerate_fields(d_get_type(v));
 			const char *id = d_get_name(v);
 			sb_puts(r, d_type_name(d_get_type(v)));
-			if (*id) {
+			if (id) {
 				sb_append(r, ':');
 				sb_puts(r, id);
 			}
 			sb_append(r, '{');
-			for (; f; f = d_next_field(f)) {
-				sb_puts(r, d_field_name(f));
-				sb_append(r, ':');
-				dump(d_peek_field(v, f));
-			}
+			for (; f; f = d_next_field(f))
+				to_string(r, d_peek_field(v, f), d_field_name(f));
 			sb_append(r, '}');
 		}
 	}
 }
 
-void dom_tests() {
+void dom_test() {
 	d_dom *d = d_alloc_dom();
 	d_set_int(d_root(d), 42);
 	ASSERT(d_as_int(d_root(d), 0) == 42);
 	d_dispose_dom(d);
 	
 	d = d_alloc_dom();
+	{
+		d_type *task = d_add_type(d, "Task");
+		d_field *t_desc = d_add_field(task, "description");
+		d_field *t_subtasks = d_add_field(task, "subtasks");
 
-	d_type *task = d_add_type(d, "Task");
-	d_field *t_desc = d_add_field(task, "description");
-	d_field *t_subtasks = d_add_field(page, "subtasks");
+		d_var *r = d_set_struct(d_root(d), task);
+		d_var *sub = d_set_array(d_get_field(r, t_subtasks), d, 2);
+		d_var *t1 = d_set_struct(d_at(sub, 0), task);
+		d_var *t2 = d_set_struct(d_at(sub, 1), task);
+		d_set_str(d_get_field(r, t_desc), d, "N-slave the World");
+		d_set_str(d_get_field(t1, t_desc), d, "Buy Cola");
+		d_set_str(d_get_field(t2, t_desc), d, "Sell half price");
+	}
+	{
+		string_builder r;
+		sb_init(&r);
+		to_string(&r, d_root(d), 0);
+		ASSERT(strcmp(sb_get_str(&r), "Task{subtasks:[Task{description:\"Buy Cola\"},Task{description:\"Sell half price\"}]description:\"N-slave the World\"}") == 0);
 
-	d_var *r = d_set_struct(d_root(d), task);
-	d_var *sub = d_set_array(d_get_field(r, t_subtasks), d, 2);
-	d_set_str(d_get_field(r, t_desc), "N-slave the World");
-	d_var t1 = d_set_struct(d_at(sub, 0), task);
-	d_var t2 = d_set_struct(d_at(sub, 1), task);
-	d_set_str(d_get_field(t1, t_desc), "Buy Cola");
-	d_set_str(d_get_field(t2, t_desc), "Sell half price");
-	string_builder r;
-	sb_init(&r);
-	toString(&r, d_root(d));
-	ASSERT(strcmp(sb_get_str(&r), "") == 0);
-
-	d_set_str(d_root(d), "Hello");
-	sb_clear(&r);
-	d_gc();
-	to_string(&r, d_root(d));
-	ASSERT(strcmp(sb_get_str(&r), "Hello") == 0);
-	d_dispose_dom(d);
-	sb_dispose(&r);
-
+		d_set_str(d_root(d), d, "Hello");
+		sb_clear(&r);
+		d_gc(d, 0, 0, 0, 0);
+		to_string(&r, d_root(d), 0);
+		ASSERT(strcmp(sb_get_str(&r), "\"Hello\"") == 0);
+		d_dispose_dom(d);
+		sb_dispose(&r);
+	}
 /*	d_type *page = d_add_type(d, "Page");
 	d_field *p_items = d_add_field(page, "items");
 
