@@ -141,7 +141,7 @@ static int parse_int(cml_stax_reader *r, int sign) {
 	return CMLR_INT;
 }
 
-cml_stax_reader *cml_create_reader(int (*getc)(void *context), void *getc_context) {
+cml_stax_reader *cmlr_create(int (*getc)(void *context), void *getc_context) {
 	cml_stax_reader *r = (cml_stax_reader *) malloc(sizeof(cml_stax_reader));
 	r->getc = getc;
 	r->getc_context = getc_context;
@@ -162,7 +162,7 @@ cml_stax_reader *cml_create_reader(int (*getc)(void *context), void *getc_contex
 	return r;
 }
 
-void cml_dispose_reader(cml_stax_reader *r) {
+void cmlr_dispose(cml_stax_reader *r) {
 	sb_dispose(&r->str);
 	sb_dispose(&r->type);
 	sb_dispose(&r->field);
@@ -187,12 +187,16 @@ int cmlr_char_pos(cml_stax_reader *r) { return r->char_pos; }
 
 int cmlr_next(cml_stax_reader *r) {
 	int result;
+	int empty_line = r->cur == '\n' || r->cur == '\r';
 	if (r->error)
 		return CMLR_ERROR;
-	if (r->indent_pos < r->cur_state_indent || r->cur <= 0 || r->cur == '\n' || r->cur == '\r') {
-		int was_in_array = r->in_array;
-		while (r->cur == '\n' || r->cur == '\r')
+	if (empty_line) {
+		do
 			expected_new_line(r);
+		while (r->cur == '\n' || r->cur == '\r');
+	}
+	if (r->indent_pos < r->cur_state_indent || r->cur <= 0 || empty_line) {
+		int was_in_array = r->in_array;
 		sb_clear(&r->field);
 		if (!r->prev)
 			return CMLR_EOF;
@@ -202,6 +206,12 @@ int cmlr_next(cml_stax_reader *r) {
 			r->cur_state_indent = s->indent;
 			r->prev = s->prev;
 			free(s);
+			for (s = r->prev; s && s->indent >= r->indent_pos; s = s->prev) {
+				if (s->indent == r->indent_pos && !s->in_array) {
+					s->indent++;
+					break;
+				}
+			}
 		}
 		return was_in_array ? CMLR_END_ARRAY : CMLR_END_STRUCT;
 	}

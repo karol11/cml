@@ -62,7 +62,7 @@ d_dom *cml_read(
 {
 	d_dom *d = d_alloc_dom();
 	const char *err;
-	cml_stax_reader *r = cml_create_reader(getc, getc_context);
+	cml_stax_reader *r = cmlr_create(getc, getc_context);
 	if ((err = parse_var(d_root(d), d, r, cmlr_next(r)))) {
 		if (*cmlr_error(r))
 			err = cmlr_error(r);
@@ -71,5 +71,6 @@ d_dom *cml_read(
 		d_dispose_dom(d);
 		d = 0;
 	}
+	cmlr_dispose(r);
 	return d;
 }

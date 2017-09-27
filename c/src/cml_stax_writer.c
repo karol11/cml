@@ -35,7 +35,7 @@ static int write_head(cml_stax_writer *w, const char *field) {
 	return 0;
 }
 
-cml_stax_writer *cml_create_writer(int (*putc)(char c, void *context), void *putc_context) {
+cml_stax_writer *cmlw_create(int (*putc)(char c, void *context), void *putc_context) {
 	cml_stax_writer *r = (cml_stax_writer *) malloc(sizeof(cml_stax_writer));
 	r->depth = 0;
 	r->in_array = 1;
@@ -44,11 +44,11 @@ cml_stax_writer *cml_create_writer(int (*putc)(char c, void *context), void *put
 	return r;
 }
 
-void cml_dispose_writer(cml_stax_writer *w) {
+void cmlw_dispose(cml_stax_writer *w) {
 	free(w);
 }
 
-int cml_write_int(cml_stax_writer *w, const char *field, long long value) {
+int cmlw_int(cml_stax_writer *w, const char *field, long long value) {
 	char buffer[21];
 	int r = write_head(w, field);
 	if (r < 0)
@@ -59,7 +59,7 @@ int cml_write_int(cml_stax_writer *w, const char *field, long long value) {
 	return w->putc('\n', w->putc_context) ? 0 : CMLW_PUTC_ERROR;
 }
 
-int cml_write_str(cml_stax_writer *w, const char *field, const char *s) {
+int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 	int r = write_head(w, field);
 	if (r < 0)
 		return r;
@@ -74,7 +74,7 @@ int cml_write_str(cml_stax_writer *w, const char *field, const char *s) {
 	return put_s(w, "\"\n") ? 0 : CMLW_PUTC_ERROR;
 }
 
-int cml_write_array(cml_stax_writer *w, const char *field) {
+int cmlw_array(cml_stax_writer *w, const char *field) {
 	int r = write_head(w, field);
 	if (r < 0)
 		return r;
@@ -84,13 +84,13 @@ int cml_write_array(cml_stax_writer *w, const char *field) {
 	return put_s(w, ":\n") ? r : CMLW_PUTC_ERROR;
 }
 
-int cml_write_end_array(cml_stax_writer *w, int prev_state) {
+int cmlw_end_array(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
 	w->depth--;
 	return 0;
 }
 
-int cml_write_struct(cml_stax_writer *w, const char *field, const char *type, const char *id) {
+int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const char *id) {
 	int r = write_head(w, field);
 	if (r < 0)
 		return r;
@@ -105,13 +105,13 @@ int cml_write_struct(cml_stax_writer *w, const char *field, const char *type, co
 	return w->putc('\n', w->putc_context) ? r : CMLW_PUTC_ERROR;
 }
 
-int cml_write_end_struct(cml_stax_writer *w, int prev_state) {
+int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
 	w->depth--;
 	return !w->in_array || w->putc('\n', w->putc_context) ? 0 : CMLW_PUTC_ERROR;
 }
 
-int cml_write_ref(cml_stax_writer *w, const char *field, const char *id) {
+int cmlw_ref(cml_stax_writer *w, const char *field, const char *id) {
 	int r = write_head(w, field);
 	if (r < 0)
 		return r;

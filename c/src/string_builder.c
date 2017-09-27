@@ -17,11 +17,11 @@ const char *sb_get_str(string_builder *b) {
 void sb_clear(string_builder *b) {
 	b->pos = b->start;
 }
-void sb_append(string_builder *b, char c) {
-	*b->pos = c;
-	if (++b->pos == b->end) {
-		int old_size = b->end - b->start;
-		int new_size = old_size + 256;
+
+void sb_grow(string_builder *b, size_t delta) {
+	if (b->pos + delta >= b->end) {
+		int old_size = b->pos - b->start;
+		int new_size = old_size + delta;
 		char *new_data = malloc(new_size);
 		memcpy(new_data, b->start, old_size);
 		free(b->start);
@@ -29,4 +29,17 @@ void sb_append(string_builder *b, char c) {
 		b->start = new_data;
 		b->end = new_data + new_size;
 	}
+}
+
+void sb_append(string_builder *b, char c) {
+	*b->pos = c;
+	if (++b->pos == b->end)
+		sb_grow(b, 255);
+}
+
+void sb_puts(string_builder *b, const char *s) {
+	size_t size = strlen(s);
+	sb_grow(b, size + 1);
+	memcpy(b->pos, s, size);
+	b->pos += size;
 }

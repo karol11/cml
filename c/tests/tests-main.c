@@ -3,6 +3,7 @@
 #include <string.h>
 #include "string_builder_test.h"
 #include "dom_test.h"
+#include "cml_stax_reader_test.h"
 
 #undef malloc
 #undef free
@@ -52,8 +53,10 @@ void perform_test(void (*test)(), const char *name) {
 	}
 }
 
-void main() {
+int main() {
 	perform_test(string_builder_test, "string builder");
 	perform_test(dom_test, "dom");
+	perform_test(cml_stax_reader_test, "cml_stax_reader");
 	printf("done\n");
+	return 0;
 }

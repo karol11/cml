@@ -2,7 +2,7 @@ CXX=gcc
 CXXFLAGS=-Wall -O3 -DTESTS
 
 TARGET=test
-SRCS=tests-main.c ../src/dom.c ../src/string_builder.c
+SRCS=tests-main.c ../src/dom.c ../src/string_builder.c ../src/cml_stax_reader.c
 
 OBJS=$(SRCS:.c=.o)
 DEPS=$(SRCS:.c=.depends)

@@ -3,11 +3,11 @@
 
 typedef struct cml_stax_reader_tag cml_stax_reader;
 
-cml_stax_reader *cml_create_reader(
+cml_stax_reader *cmlr_create(
 	int (*getc)(void *context),
 	void *getc_context);
 
-void cml_dispose_reader(cml_stax_reader *);
+void cmlr_dispose(cml_stax_reader *);
 
 enum cml_reader_states {
 	CMLR_INT,

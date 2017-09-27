@@ -20,6 +20,9 @@ void string_builder_test() {
 		sb_append(&a, *s);
 	ASSERT(strcmp(sb_get_str(&a), test_text1) == 0);
 
+	sb_puts(&a, test_text1);
+	ASSERT(strcmp(sb_get_str(&a), "smallersmaller") == 0);
+
 	sb_dispose(&a);
 }
 

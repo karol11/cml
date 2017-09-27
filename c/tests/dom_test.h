@@ -5,12 +5,7 @@
 #include "../src/tests.h"
 #include "../src/string_builder.h"
 
-void sb_puts(string_builder *b, const char *s) {
-	while (*s)
-		sb_append(b, *s++);
-}
-
-void to_string(string_builder *r, d_var *v, const char *field) {
+static void to_string(string_builder *r, d_var *v, const char *field) {
 	if (d_kind(v) != CMLD_UNDEFINED && field) {
 		sb_puts(r, field);
 		sb_append(r, ':');
