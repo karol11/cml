@@ -44,7 +44,19 @@ static int error(cml_stax_reader *r, const char *e) {
 	return 0;
 }
 
+static int skip_ws(cml_stax_reader *r) {
+	int c = r->cur;
+	while (c == ' ' || c == '\t') 
+		c = next_char(r);
+	if (c == '#') {
+		while (c != '\n' && c != '\r' && c)
+			c = next_char(r);
+	}
+	return c;
+}
+
 static int expected_new_line(cml_stax_reader *r) {
+	skip_ws(r);
 	if (r->cur == '\n') {
 		if (next_char(r) == '\r')
 			next_char(r);
@@ -67,17 +79,6 @@ static int expected_new_line(cml_stax_reader *r) {
 	}
 	r->indent_pos = r->char_pos;
 	return 1;
-}
-
-static int skip_ws(cml_stax_reader *r) {
-	int c = r->cur;
-	while (c == ' ' || c == '\t') 
-		c = next_char(r);
-	if (c == '#') {
-		while (c != '\n' && c != '\r' && c)
-			c = next_char(r);
-	}
-	return c;
 }
 
 static int is_first_id_letter(int c) {

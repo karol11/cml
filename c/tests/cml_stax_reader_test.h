@@ -5,7 +5,7 @@
 #include "../src/cml_stax_reader.h"
 #include "../src/string_builder.h"
 
-int getc_asciiz(void *context) {
+static int getc_asciiz(void *context) {
 	char **c = (char**) context;
 	return *(*c)++;
 }
@@ -55,10 +55,10 @@ void cml_stax_reader_test() {
 	char *t =
 		"Page\n"
 		"items:\n"
-		"	Page.header\n"
-		"	align 1\n"
+		"	Page.header #comment\n"
+		"	align 1 # comment\n"
 		"	size 20\n"
-		"	items:\n"
+		"	items: #comment\n"
 		"		Image.logo\n"
 		"		align 2\n"
 		"		size 20\n"

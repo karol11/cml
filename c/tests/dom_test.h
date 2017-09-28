@@ -38,10 +38,14 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 	case CMLD_STRUCT:
 		if (!d_get_id(v))
 			sb_puts(r, "null");
-		else {
+		else if (d_get_tag(v)) {
+			sb_append(r, '=');
+			sb_puts(r, d_get_name(v));
+		} else {
 			d_field *f = d_enumerate_fields(d_get_type(v));
 			const char *id = d_get_name(v);
 			sb_puts(r, d_type_name(d_get_type(v)));
+			d_set_tag(v, 1);
 			if (id) {
 				sb_append(r, ':');
 				sb_puts(r, id);

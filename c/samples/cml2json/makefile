@@ -1,13 +1,11 @@
 CC=gcc
-CCFLAGS=-Wall -O3 -DTESTS
+CCFLAGS=-Wall -O3 -I../../src
 
-TARGET=test
+TARGET=cml2json
 SRCS=\
-	tests-main.c\
-	../src/dom.c\
-	../src/string_builder.c\
-	../src/cml_stax_reader.c\
-	../src/cml_dom_reader.c
+	cml_to_json_stax_converter.c\
+	../../src/string_builder.c\
+	../../src/cml_stax_reader.c
 
 OBJS=$(SRCS:.c=.o)
 DEPS=$(SRCS:.c=.depends)

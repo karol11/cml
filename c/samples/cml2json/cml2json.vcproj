@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="tests"
-	ProjectGUID="{2AEDEA4D-0032-41E2-998A-C77FA2063400}"
-	RootNamespace="tests"
+	Name="cml2json"
+	ProjectGUID="{C648C467-61D9-4F0E-B3B9-C555D5387564}"
+	RootNamespace="cml2json"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,7 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;TESTS"
+				AdditionalIncludeDirectories="../../src"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -114,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;TESTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -134,8 +135,6 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
-				MapFileName="tests.map"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -173,101 +172,17 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\tests-main.c"
+				RelativePath="..\..\src\cml_stax_reader.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\tests.h"
+				RelativePath=".\cml_to_json_stax_converter.c"
 				>
 			</File>
-			<Filter
-				Name="string_builder"
+			<File
+				RelativePath="..\..\src\string_builder.c"
 				>
-				<File
-					RelativePath="..\src\string_builder.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\string_builder.h"
-					>
-				</File>
-				<File
-					RelativePath=".\string_builder_test.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="dom"
-				>
-				<File
-					RelativePath="..\src\dom.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\dom.h"
-					>
-				</File>
-				<File
-					RelativePath=".\dom_test.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="cml_stax_writer"
-				>
-				<File
-					RelativePath="..\src\cml_stax_writer.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\cml_stax_writer.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="cml_dom_writer"
-				>
-				<File
-					RelativePath="..\src\cml_dom_writer.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\cml_dom_writer.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="cml_stax_reader"
-				>
-				<File
-					RelativePath="..\src\cml_stax_reader.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\cml_stax_reader.h"
-					>
-				</File>
-				<File
-					RelativePath=".\cml_stax_reader_test.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="cml_dom_reader"
-				>
-				<File
-					RelativePath="..\src\cml_dom_reader.c"
-					>
-				</File>
-				<File
-					RelativePath="..\src\cml_dom_reader.h"
-					>
-				</File>
-				<File
-					RelativePath=".\cml_dom_reader_test.h"
-					>
-				</File>
-			</Filter>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

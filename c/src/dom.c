@@ -212,7 +212,7 @@ d_var *d_get_field(d_var *s, d_field *field) {
 			&s->struct_val->fields,
 			s->struct_val->type->dom,
 			s->struct_val->fields.size,
-			field->index - s->struct_val->fields.size + 1);
+			s->struct_val->type->size - s->struct_val->fields.size + 1);
 	return s->struct_val->fields.items + field->index;
 }
 

@@ -4,6 +4,7 @@
 #include "string_builder_test.h"
 #include "dom_test.h"
 #include "cml_stax_reader_test.h"
+#include "cml_dom_reader_test.h"
 
 #undef malloc
 #undef free
@@ -46,7 +47,7 @@ void perform_test(void (*test)(), const char *name) {
 		int i = malloc_numerator;
 		while (--i >= 0) {
 			if (malloc_ids[i])
-				printf("leaked alloc#%d\n", *malloc_ids[i]);
+				printf("leaked allocation#%d\n", *malloc_ids[i]);
 		}
 		printf("%d leaks\n", allocs_cnt);
 		fail("leaks!");
@@ -57,6 +58,7 @@ int main() {
 	perform_test(string_builder_test, "string builder");
 	perform_test(dom_test, "dom");
 	perform_test(cml_stax_reader_test, "cml_stax_reader");
+	perform_test(cml_dom_reader_test, "cml_dom_reader");
 	printf("done\n");
 	return 0;
 }
