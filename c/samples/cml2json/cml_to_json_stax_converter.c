@@ -1,12 +1,20 @@
 #include <stdio.h>
 #include "cml_stax_reader.h"
+#include "utf8.h"
 
 FILE *in, *out;
 cml_stax_reader *rd;
 int tabs = 1;
 
-int getc_stdin(void *unused) {
+int getc_in(void *unused) {
 	return getc(in);
+}
+int putc_out(void *unused, char c) {
+	return putc(c, out);
+}
+int getc_char_ptr(void *ctx) {
+	unsigned char **c = (unsigned char**) ctx;
+	return *(*c)++;
 }
 
 void indent(int i) {
@@ -25,7 +33,20 @@ int traverse(int k) {
 		fprintf(out, "%lld", cmlr_int(rd));
 		break;
 	case CMLR_STRING:
-		fprintf(out, "\"%s\"", cmlr_str(rd));
+		fputc('\"', out);
+		{
+			const char *src = cmlr_str(rd);
+			for (;;) {
+				int c = get_utf8(getc_char_ptr, (void*)&src);
+				if (!c)
+					break;
+				if (c == '\\' || c == '\"' || c < ' ')
+					fprintf(out, "\\u%04x", c);
+				else 
+					put_utf8(c, putc_out, 0);
+			}
+		}
+		fputc('\"', out);
 		break;
 	case CMLR_START_STRUCT:
 		fprintf(out, "{\r");
@@ -77,13 +98,13 @@ int traverse(int k) {
 int main(int argc, const char **args) {
 	int r = 0;
 	if (argc == 3) {
-		in = fopen(args[1], "rt");
-		out = fopen(args[2], "wt");
+		in = fopen(args[1], "r");
+		out = fopen(args[2], "w");
 		if (!in || !out) {
 			fprintf(stderr, "can't open %s", in ? args[2] : args[1]);
 			return -1;
 		}
-		rd = cmlr_create(getc_stdin, 0);
+		rd = cmlr_create(getc_in, 0);
 		r = traverse(cmlr_next(rd));
 		cmlr_dispose(rd);
 		fclose(in);

@@ -4,7 +4,7 @@
 typedef struct cml_stax_writer_tag cml_stax_writer;
 
 cml_stax_writer *cmlw_create(
-	int (*putc)(char c, void *context),
+	int (*putc)(void *context, char c),
 	void *putc_context);
 
 void cmlw_dispose(cml_stax_writer *);
@@ -12,6 +12,8 @@ void cmlw_dispose(cml_stax_writer *);
 enum cmlw_error_codes {
 	CMLW_PUTC_ERROR = -1,
 	CMLW_UNEXPECTED_FIELD = -2,
+	CMLW_WRITE_AFTER_ERROR = -3,
+	CMLW_UNPAIRED_END = -4,
 };
 
 int cmlw_int(cml_stax_writer *writer, const char *field, long long value);

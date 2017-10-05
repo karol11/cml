@@ -7,17 +7,17 @@
 
 //
 // d_dom
-// Represents Document Object Model been read or to be written to CML file.
+// Represents Document Object Model been read from or to be written to CML file.
 // Contains
 // - a root object,
-// - a directory of named objects and,
-// - type information describing structured types and its fields
+// - a directory of named objects,
+// - and the type information describing structure types and their fields
 //
 typedef struct d_dom_tag d_dom;
 
 //
 // Create a new DOM instance.
-// Ater been used it has to be disposed with d_free_dom call.
+// Ater been used it has to be disposed with d_dispose_dom call.
 //
 d_dom *d_alloc_dom();
 
@@ -31,7 +31,7 @@ void d_dispose_dom(d_dom *dom);
 //
 
 //
-// 'd_type' defines structured data types.
+// 'd_type' defines structure data types.
 // Each type has a name and a list of named fields.
 // Types of the same name defined in different DOMs
 // are represented by different d_type structures.
@@ -50,8 +50,8 @@ d_type *d_lookup_type(d_dom *dom, const char *name);
 d_type *d_add_type(d_dom *dom, const char *name);
 
 //
-// Returns a type name.
-// Result pointer is valid till d_free_dom called.
+// Returns the type name.
+// Result pointer is valid till d_dispose_dom called.
 //
 const char *d_type_name(d_type *type);
 
@@ -75,7 +75,7 @@ d_field *d_add_field(d_type *type, const char *field_name);
 
 //
 // Returns the field's name.
-// Pointer is valid untill d_free_dom called.
+// Pointer is valid till d_dispose_dom called.
 //
 const char *d_field_name(d_field *field);
 
@@ -89,7 +89,7 @@ d_field *d_enumerate_fields(d_type *type);
 
 //
 // A single step of iteration process. See d_enumerate_fields for details.
-// Returns NULL on the end of list.
+// Returns NULL on the end of the list.
 //
 d_field *d_next_field(d_field *);
 
@@ -99,7 +99,7 @@ d_field *d_next_field(d_field *);
 
 //
 // 'd_var' represents all types of data nodes.
-// It can store integer, string, array, structure or be in an undefined state.
+// It can store integer, string, array, structure or can be in an undefined state.
 // All data manipulation routines treat NULL d_var pointers as having CMLD_UNDEFINED value.
 //
 typedef struct d_var_tag d_var;
@@ -147,7 +147,7 @@ void d_set_str(d_var *dst, d_dom *dom, const char *val);
 //
 // Returns a string value of given node if it is CMLD_STR or
 // def_val otherwise.
-// Returned pointer is valid till d_free_dom or d_gc call.
+// Returned pointer is valid till d_dispose_dom or d_gc call.
 //
 const char *d_as_str(d_var *src, const char *def_val);
 
@@ -178,7 +178,7 @@ d_var *d_at(d_var *array, int index);
 
 //
 // Resizes array, adding 'count' items starting at 'at' index.
-// If reallocation takes place it is registered in given dom.
+// If reallocation takes place, it is registered in given dom.
 // Array grows using a reserved gap, thus not all inserts causes reallocations.
 // d_insert invalidates all d_var pointers to array items.
 // 'at' index should be within the range of array indexes.
@@ -310,13 +310,13 @@ void d_gc(
 	d_dom *dom,
 	void (*marker)(void*context),
 	void *marker_context,
-	void (*on_dispose)(void *id, void*context),
+	void (*on_dispose)(void *context, void *id),
 	void *on_dispose_context
 	);
 
 //
 // Marks the given struct as additional root in gc cycle.
-// Can't be called outside the gc d_gc marker punction.
+// Can't be called outside the gc d_gc marker function.
 //
 void d_gc_mark(void *struct_id);
 

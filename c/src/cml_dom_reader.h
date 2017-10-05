@@ -6,7 +6,7 @@ typedef struct d_dom_tag d_dom;
 d_dom *cml_read(
 	int (*getc)(void *context),
 	void *getc_context,
-	void (*on_error)(const char *error, int line_num, int char_pos, void *context),
+	void (*on_error)(void *context, const char *error, int line_num, int char_pos),
 	void *on_error_context);
 
 #endif

@@ -84,7 +84,7 @@ static void check_multi_ref(d_var *v) {
 	}
 }
 
-int cml_write(d_dom *dom, int (*putc)(char c, void *context), void *putc_context) {
+int cml_write(d_dom *dom, int (*putc)(void *context, char c), void *putc_context) {
 	struct cml_stax_writer_data data;
 	data.w = cmlw_create(putc, putc_context);
 	check_multi_ref(d_root(dom));

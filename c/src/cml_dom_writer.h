@@ -5,7 +5,7 @@ typedef struct d_dom_tag d_dom;
 
 int cml_write(
 	d_dom *dom,
-	int (*putc)(char c, void *context),
+	int (*putc)(void *context, char c),
 	void *putc_context);
 
 #endif

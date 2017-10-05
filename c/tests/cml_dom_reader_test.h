@@ -16,12 +16,12 @@ void cml_dom_reader_test() {
 		"		Image.logo\n"
 		"		align 2\n"
 		"		size 20\n"
-		"		url \"logo.gif\"\n"
+		"		url \"logo.gif\\\\\\\"\"\n"
 		"\n"
 		"		TextBox.title\n"
 		"		content:\n"
 		"			Span\n"
-		"			text \"Title\"\n"
+		"			text \"\\u000d\\u000a\\u0411\\uffffTitle\"\n"
 		"			style TextStyle\n"
 		"				parent TextStyle.main_style\n"
 		"					family \"Arial\"\n"
@@ -38,7 +38,7 @@ void cml_dom_reader_test() {
 		"		style=main_style\n"
 		"\n"
 		"		Span\n"
-		"		text \"world!\"\n"
+		"		text \"world!\\\\\\\"\"\n"
 		"		style TextStyle.bold\n"
 		"			weight 600\n"
 		"			parent=main_style\n";
@@ -47,11 +47,11 @@ void cml_dom_reader_test() {
 	sb_init(&sb);
 	to_string(&sb, d_root(d), 0);
 	ASSERT(strcmp(sb_get_str(&sb),
-		"Page{items:[Page:header{size:20align:1items:[Image:logo{url:\"logo.gif\"size:20align:2},"
+		"Page{items:[Page:header{size:20align:1items:[Image:logo{url:\"logo.gif\\\"\"size:20align:2},"
 		"TextBox:title{content:[Span{style:TextStyle{color:16436877size:24parent:TextStyle:main_style{"
-		"color:0size:12weight:400family:\"Arial\"}}text:\"Title\"}]}]},TextBox:mainText{content:[Span{"
-		"style:=main_styletext:\"Hello \"},Span{style:TextStyle:bold{weight:600parent:=main_style}text:"
-		"\"world!\"}]}]}") == 0);
+		"color:0size:12weight:400family:\"Arial\"}}text:\"\x0d\x0a\xd0\x91\xEF\xBF\xBFTitle\"}]}]},"
+		"TextBox:mainText{content:[Span{style:=main_styletext:\"Hello \"},Span{style:TextStyle:bold{"
+		"weight:600parent:=main_style}text:\"world!\\\"\"}]}]}") == 0);
 	d_dispose_dom(d);
 	sb_dispose(&sb);
 }

@@ -5,6 +5,7 @@
 #include "dom_test.h"
 #include "cml_stax_reader_test.h"
 #include "cml_dom_reader_test.h"
+#include "utf8_test.h"
 
 #undef malloc
 #undef free
@@ -14,7 +15,7 @@ int *malloc_ids[MALLOCS_MAX+1];
 int malloc_numerator = 0;
 int allocs_cnt = 0;
 
-void *test_malloc(size_t size) {
+void *test_malloc(int size) {
 	int *r = (int*) malloc(size + sizeof(int));
 	*r = malloc_numerator;
 	malloc_ids[malloc_numerator] = r;
@@ -56,6 +57,7 @@ void perform_test(void (*test)(), const char *name) {
 
 int main() {
 	perform_test(string_builder_test, "string builder");
+	perform_test(utf8_test, "utf8");
 	perform_test(dom_test, "dom");
 	perform_test(cml_stax_reader_test, "cml_stax_reader");
 	perform_test(cml_dom_reader_test, "cml_dom_reader");

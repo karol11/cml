@@ -183,6 +183,10 @@
 				RelativePath="..\..\src\string_builder.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\utf8.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

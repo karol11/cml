@@ -3,6 +3,7 @@
 #include "tests.h"
 #include "cml_stax_reader.h"
 #include "string_builder.h"
+#include "utf8.h"
 
 typedef struct cml_stax_state_tag {
 	struct cml_stax_state_tag *prev;
@@ -85,7 +86,7 @@ static int is_first_id_letter(int c) {
 	return
 		(c >= 'a' && c <= 'z') ||
 		(c >= 'A' && c <= 'Z') ||
-		c == '$' || c == '_';
+		c == '$' || c == '_' || c == '/' || c == '\\';
 }
 
 static int is_digit(int c) {
@@ -140,6 +141,27 @@ static int parse_int(cml_stax_reader *r, int sign) {
 	expected_new_line(r);
 	r->int_val = i * sign;
 	return CMLR_INT;
+}
+
+static int get_c_for_utf8(void *context) {
+	cml_stax_reader *rd = (cml_stax_reader*)context;
+	int r = rd->cur;
+	next_char(rd);
+	return r;
+}
+
+static int hex(cml_stax_reader *r) {
+	int i = get_c_for_utf8(r);
+	if (i >= '0' && i <= '9')
+		return i - '0';
+	if (!(i >= 'a' && i <= 'f'))
+		error(r, "expected hex char");
+	return i - 'a' + 10;
+}
+
+static int putc_sb_append(void *context, char byte) {
+	sb_append((string_builder*)context, byte);
+	return 1;
 }
 
 cml_stax_reader *cmlr_create(int (*getc)(void *context), void *getc_context) {
@@ -230,23 +252,36 @@ int cmlr_next(cml_stax_reader *r) {
 		push_state(r, 1, r->indent_pos <= array_indent ? r->indent_pos + 1 : r->indent_pos);
 		result = CMLR_START_ARRAY;
 	} else if (match(r, '"')) {
-		int c = r->cur;
 		sb_clear(&r->str);
-		for (;; c = next_char(r)) {
-			if (c == '"') {
-				c = next_char(r);
-				if (c == '"')
-					sb_append(&r->str, '\"');
-				else
+		for (;;) {
+			int c = get_utf8(get_c_for_utf8, r);
+			if (c == '\\') {
+				switch (c = get_utf8(get_c_for_utf8, r)) {
+				case '\\': sb_append(&r->str, '\\'); break;
+				case '\"': sb_append(&r->str, '\"'); break;
+				case 'u':
+					{
+						unsigned int i = hex(r) << 12;
+						i |= hex(r) << 8;
+						i |= hex(r) << 4;
+						i |= hex(r);
+						put_utf8(i, putc_sb_append, &r->str);
+					}
 					break;
+				default:
+					error(r, "bad escape");
+					return CMLR_ERROR;
+				}
+			} else if (c == '"') {
+				break;
 			} else if (!c) {
 				error(r, "string not terminated");
 				return CMLR_ERROR;
 			} else
-				sb_append(&r->str, c);
+				put_utf8(c, putc_sb_append, &r->str);
 		}
 		expected_new_line(r);
-		result = CMLR_STRING;
+		result = r->error ? CMLR_ERROR : CMLR_STRING;
 	} else if (is_digit(r->cur)) {
 		result = parse_int(r, 1);
 	} else if (r->cur == '-') {

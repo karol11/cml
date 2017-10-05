@@ -425,7 +425,7 @@ void d_gc_mark(void *struct_id) {
 
 void d_gc(d_dom *dom,
 	void (*marker)(void*context), void *marker_context,
-	void (*on_dispose)(void *id, void*context), void *on_dispose_context)
+	void (*on_dispose)(void *context, void *id), void *on_dispose_context)
 {
 	dom->named.size = 0;
 	mark(&dom->root);
@@ -442,7 +442,7 @@ void d_gc(d_dom *dom,
 			} else {
 				*p = (size_t*) n;
 				if (on_dispose)
-					on_dispose(c, on_dispose_context);
+					on_dispose(on_dispose_context, c);
 				free(c);
 			}
 			c = (size_t*) n;

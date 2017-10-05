@@ -12,7 +12,7 @@ items:
 		TextBox.title
 		content:
 			Span
-			text  "Title"
+			text  "हाय"
 			style TextStyle
 				parent TextStyle.main_style
 					family "Arial"
@@ -25,11 +25,11 @@ items:
 	TextBox.mainText
 	content:
 		Span
-		text "Hello "
+		text "שלום "
 		style =main_style
 		
 		Span
-		text "world!"
+		text "嗨!"
 		style TextStyle.bold
 			weight 600
 			parent =main_style

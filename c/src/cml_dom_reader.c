@@ -57,7 +57,7 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 d_dom *cml_read(
 	int (*getc)(void *context),
 	void *getc_context,
-	void (*on_error)(const char *error, int line_num, int char_pos, void *context),
+	void (*on_error)(void *context, const char *error, int line_num, int char_pos),
 	void *on_error_context)
 {
 	d_dom *d = d_alloc_dom();
@@ -67,7 +67,7 @@ d_dom *cml_read(
 		if (*cmlr_error(r))
 			err = cmlr_error(r);
 		if (on_error)
-			on_error(err, cmlr_line_num(r), cmlr_char_pos(r), on_error_context);
+			on_error(on_error_context, err, cmlr_line_num(r), cmlr_char_pos(r));
 		d_dispose_dom(d);
 		d = 0;
 	}

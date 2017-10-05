@@ -6,7 +6,7 @@
 #include "../src/string_builder.h"
 
 static int getc_asciiz(void *context) {
-	char **c = (char**) context;
+	unsigned char **c = (unsigned char**) context;
 	return *(*c)++;
 }
 
