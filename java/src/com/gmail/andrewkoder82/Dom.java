@@ -15,7 +15,7 @@ import java.util.Set;
  - and a set of possible named structures,
  
  CML document elements can be:
- - String, Integer and Long terminal objects
+ - String, Boolean, Float, Double, Integer and Long terminal objects
  - List<Of elements>
  - Dom.Struct-s having:
       - type

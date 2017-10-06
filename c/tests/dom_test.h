@@ -36,7 +36,7 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 		}
 		break;
 	case CMLD_STRUCT:
-		if (!d_get_id(v))
+		if (!d_get_ref(v))
 			sb_puts(r, "null");
 		else if (d_get_tag(v)) {
 			sb_append(r, '=');

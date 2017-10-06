@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 #include "../../src/dom.h"
 #include "../../src/string_builder.h"
 #include "../../src/utf8.h"
 #include "../../src/cml_dom_writer.h"
+#include "../../src/cml_dom_reader.h"
 
 FILE *in, *out;
 
@@ -11,6 +13,11 @@ int struct_numerator = 0;
 int cur = ' ';
 string_builder s;
 d_dom *raw;
+
+d_dom *config = 0;
+d_var *conf_type_field = 0;
+d_var *conf_ref_field = 0;
+d_var *conf_id_field = 0;
 
 int sb_putc(void *context, char byte) {
 	sb_append((string_builder*)context, byte);
@@ -46,6 +53,23 @@ int expected(char c) {
 	return 0;
 }
 
+const char *find_name(d_var *s, d_var *names) {
+	d_field *ff = d_enumerate_fields(d_get_type(s));
+	for (; ff; ff = d_next_field(ff)) {
+		int i = -1, n = d_get_count(names);
+		while (++i < n) {
+			if (strcmp(d_field_name(ff), d_as_str(d_at(names, i), "")) == 0) {
+				const char *type_name = d_as_str(d_peek_field(s, ff), 0);
+				if (type_name) {
+					d_undefine(d_peek_field(s, ff));
+					return type_name;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 const char *parse_str() {
 	sb_clear(&s);
 	if (cur != '"') {
@@ -59,8 +83,8 @@ const char *parse_str() {
 			case '/':
 			case '"': sb_append(&s, cur); break;
 			case 'r': sb_append(&s, '\r'); break;
-			case 'n': sb_append(&s, '\r'); break;
-			case 't': sb_append(&s, '\r'); break;
+			case 'n': sb_append(&s, '\n'); break;
+			case 't': sb_append(&s, '\t'); break;
 			case 'b': sb_append(&s, '\b'); break;
 			case 'f': sb_append(&s, '\f'); break;
 			case 'u':
@@ -128,8 +152,30 @@ int parse_val(d_var *dst) {
 					return 0;
 				if (!parse_val(f))
 					return 0;
-				if (!match(','))
+				if (!match(',')) {
+					const char *tn = find_name(dst, conf_type_field);
+					const char *idn = find_name(dst, conf_id_field);
+					const char *refn = find_name(dst, conf_ref_field);
+					if (tn) {
+						d_type *t = d_add_type(raw, tn);
+						d_struct *s = d_make_struct(t);
+						d_field *f = d_enumerate_fields(type);
+						for (; f; f = d_next_field(f))
+							d_move(d_ref_get_field(s, d_add_field(t, d_field_name(f))), d_peek_field(dst, f));
+						d_set_ref(dst, s);
+					}
+					if (idn)
+						d_set_name(dst, idn);
+					if (!tn && !idn && refn) {
+						d_struct *target = d_get_named(raw, refn);
+						if (!target) {
+							printf("unresolved name %s", refn);
+							return 0;
+						}
+						d_set_ref(dst, target);
+					}
 					return expected('}');
+				}
 			}
 		}
 	} else if (cur == '"') {
@@ -161,26 +207,47 @@ int parse_val(d_var *dst) {
 	return 1;
 }
 
+void file_err(void *context, const char *error, int line_num, int char_pos) {
+	printf("error %s at file %s %d:%d", error, (char*)context, line_num, char_pos);
+}
+
 int main(int argc, const char **args) {
-	int r = 0;
 	if (argc >= 3) {
 		in = fopen(args[1], "r");
-		out = fopen(args[2], "w");
-		if (!in || !out) {
-			fprintf(stderr, "can't open %s", in ? args[2] : args[1]);
+		if (!in) {
+			fprintf(stderr, "can't read %s", args[1]);
 			return -1;
 		}
+		if (argc >= 4) {
+			FILE *cf = fopen(args[3], "r");
+			if (!cf) {
+				fprintf(stderr, "can't open confid %s", args[3]);
+				return -1;
+			}
+			config = cml_read(getc, cf, file_err, (void*)args[3]);
+			fclose(cf);
+			conf_type_field = d_peek_field(d_root(config), d_lookup_field(d_lookup_type(config, "config"), "typeFields"));
+			conf_ref_field = d_peek_field(d_root(config), d_lookup_field(d_lookup_type(config, "config"), "refFields"));
+			conf_id_field = d_peek_field(d_root(config), d_lookup_field(d_lookup_type(config, "config"), "idFields"));
+		}
+
 		raw = d_alloc_dom();
 		sb_init(&s);
 		next();
-		parse_val(d_root(raw));
-
-		cml_write(raw, out_putc, 0);
-
+		if (parse_val(d_root(raw))) {
+			out = fopen(args[2], "w");
+			if (!out) {
+				fprintf(stderr, "can't write %s", args[2]);
+				return -1;
+			}
+			cml_write(raw, out_putc, 0);
+			fclose(out);
+		}
+		d_dispose_dom(config);
+		d_dispose_dom(raw);
 		sb_dispose(&s);
 		fclose(in);
-		fclose(out);
 	} else
-		printf("usage in_json_file out_cml_file\n");
-	return r;
+		printf("usage in_json_file out_cml_file [optional_config]\n");
+	return 0;
 }

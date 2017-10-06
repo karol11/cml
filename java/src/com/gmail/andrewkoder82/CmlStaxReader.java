@@ -13,7 +13,9 @@ public class CmlStaxReader {
 	static public final int R_REF = 4;
 	static public final int R_ARRAY_START = 5;
 	static public final int R_ARRAY_END = 6;
-	static public final int R_EOF = 7;
+	static public final int R_BOOL = 7;
+	static public final int R_FLOAT = 8;
+	static public final int R_EOF = 9;
 	
 	public CmlStaxReader(Reader in) throws IOException {
 		this.in = in;
@@ -63,14 +65,26 @@ public class CmlStaxReader {
 				else
 					r.append((char) cur);
 			}
+			nextChar();
 			expectedNewLine();
 			strVal = r.toString();
 			return R_STRING;
 		}
 		if (isDigit(cur))
-			return parseInt(1);
-		if (cur == '-')
-			return parseInt(-1);
+			return parseNum(1);
+		if (match('-')) {
+			if (isDigit(cur))
+				return parseNum(-1);
+			else {
+				boolVal = false;
+				expectedNewLine();
+				return R_BOOL;
+			}
+		} if (match('+')) {
+			boolVal = true;
+			expectedNewLine();
+			return R_BOOL;			
+		}
 		type = getId("type");
 		strVal = match('.') ? getId("object") : null;
 		int objectIndent = indentPos;
@@ -110,6 +124,14 @@ public class CmlStaxReader {
 		return longVal;
 	}
 
+	public double getDblVal() {
+		return dblVal;
+	}
+
+	public boolean getBoolVal() {
+		return boolVal;
+	}
+
 	public void error(String message) {
 		throw new RuntimeException(message + " at " + lineNumber + ":" + charPos);		
 	}
@@ -127,7 +149,9 @@ public class CmlStaxReader {
 	
 	String field, type, strVal;
 	long longVal;
-		
+	double dblVal;
+	boolean boolVal;
+	
 	void pushState(boolean newInArray, int newIndent) {
 		states.add(curStateIndent << 1 | (inArray ? 1 : 0));
 		inArray = newInArray;
@@ -204,7 +228,7 @@ public class CmlStaxReader {
 		while (isIdLetter(nextChar()));
 		return r.toString();
 	}
-	int parseInt(int sign) throws IOException {
+	long parseInt(int sign) throws IOException {
 		long r = 0;
 		for (; isDigit(cur); nextChar()) {
 			long n = r * 10 + cur - '0';
@@ -212,8 +236,32 @@ public class CmlStaxReader {
 				error("long overflow");
 			r = n;
 		}
+		return r * sign;
+	}
+	int parseNum(int sign) throws IOException {
+		long r = parseInt(sign);
+		for (; isDigit(cur); nextChar()) {
+			long n = r * 10 + cur - '0';
+			if (n < r)
+				error("long overflow");
+			r = n;
+		}
+		boolean hasFractionPart = match('.');
+		double frac = r;
+		if (hasFractionPart) {
+			for (double p = 0.1; isDigit(cur); r *= 0.1, nextChar())
+				frac += p * (cur - '0');
+		}
+		if (match('e')) {
+			hasFractionPart = true;
+			frac = frac * Math.pow(parseInt(match('-') ? -1 : 1), 10);
+		}
 		expectedNewLine();
-		longVal = r * sign;
+		if (hasFractionPart) {
+			dblVal = frac;
+			return R_FLOAT;
+		}
+		longVal = r;
 		return R_INT;
 	}
 }

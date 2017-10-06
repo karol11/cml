@@ -30,7 +30,7 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 		if (strcmp(cmlr_id(r), "$") == 0) 
 			d_set_ref(v, 0);
 		else {
-			void *id = d_get_id(d_get_named(d, cmlr_id(r)));
+			d_struct *id = d_get_named(d, cmlr_id(r));
 			if (id)
 				d_set_ref(v, id);
 			else

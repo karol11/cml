@@ -51,10 +51,13 @@ public class DomQuery implements Iterable<DomQuery> {
 		return target instanceof List<?> ? ((List<?>)target).size() : 0;
 	}
 	public boolean exists() {
-		return this == dummy;
+		return this != dummy;
 	}
 	public Object get() { return target; }
+	
 	public int asInt(int defVal) {
+		if (target instanceof Boolean)
+			return (boolean)target ? 1 : 0;
 		if (target instanceof Integer)
 			return (int)target;
 		if (target instanceof Long) {
@@ -71,6 +74,8 @@ public class DomQuery implements Iterable<DomQuery> {
 		return defVal;
 	}
 	public long asLong(long defVal) {
+		if (target instanceof Boolean)
+			return (boolean)target ? 1 : 0;
 		if (target instanceof Integer)
 			return (int)target;
 		if (target instanceof Long)
@@ -84,8 +89,63 @@ public class DomQuery implements Iterable<DomQuery> {
 		}
 		return defVal;
 	}
+	public float asFloat(float defVal) {
+		if (target instanceof Boolean)
+			return (boolean)target ? 1 : 0;
+		if (target instanceof Integer)
+			return (int)target;
+		if (target instanceof Float)
+			return (float)target;
+		if (target instanceof Long) {
+			long l = (long)target;
+			return l > Float.MIN_VALUE && l < Float.MAX_VALUE ? (float) l : defVal;
+		}
+		if (target instanceof Double) {
+			double l = (double)target;
+			return l > Float.MIN_VALUE && l < Float.MAX_VALUE ? (float) l : defVal;
+		}
+		if (target instanceof String) {
+			try {
+				return Float.valueOf((String) target);
+			} catch (NumberFormatException e) {
+				return defVal;
+			}
+		}
+		return defVal;
+	}
+	public double asDouble(double defVal) {
+		if (target instanceof Boolean)
+			return (boolean)target ? 1 : 0;
+		if (target instanceof Integer)
+			return (int)target;
+		if (target instanceof Float)
+			return (float)target;
+		if (target instanceof Long) {
+			long l = (long)target;
+			return l;
+		}
+		if (target instanceof Double) {
+			double l = (double)target;
+			return l;
+		}
+		if (target instanceof String) {
+			try {
+				return Double.valueOf((String) target);
+			} catch (NumberFormatException e) {
+				return defVal;
+			}
+		}
+		return defVal;
+	}
+	public boolean asBool() {
+		if (target instanceof Boolean)
+			return (boolean)target;
+		if (target instanceof String)
+			return "true".equals((String) target);
+		return asInt(0) != 0;		
+	}
 	public String asStr(String defVal) {
-		if (target instanceof Integer || target instanceof Long)
+		if (target instanceof Integer || target instanceof Long || target instanceof Float || target instanceof Double || target instanceof Boolean)
 			return target.toString();
 		if (target instanceof String)
 			return (String) target;

@@ -1,0 +1,53 @@
+{	"type":"Page",
+	"items":[
+		{			"type":"Page",
+			"id":"header",
+			"align":1,
+			"size":40,
+			"items":[
+				{					"type":"Image",
+					"id":"logo",
+					"align":2,
+					"size":20,
+					"url":"logo.gif"
+				},
+				{					"type":"TextBox",
+					"id":"title",
+					"content":[
+						{							"type":"Span",
+							"text":"हाय",
+							"style":{								"type":"TextStyle",
+								"parent":{									"type":"TextStyle",
+									"id":"main_style",
+									"family":"Arial",
+									"weight":400,
+									"size":12,
+									"color":0
+								},
+								"size":24,
+								"color":16436877
+							}
+						}
+					]
+				}
+			]
+		},
+		{			"type":"TextBox",
+			"id":"mainText",
+			"content":[
+				{					"type":"Span",
+					"text":"שלום ",
+					"style":{"ref":"main_style"}
+				},
+				{					"type":"Span",
+					"text":"嗨!",
+					"style":{						"type":"TextStyle",
+						"id":"bold",
+						"weight":600,
+						"parent":{"ref":"main_style"}
+					}
+				}
+			]
+		}
+	]
+}

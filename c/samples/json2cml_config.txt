@@ -1,0 +1,11 @@
+config
+typeFields:
+	"type"
+	"class"
+	"$"
+idFields:
+	"id"
+	"#"
+refFields:
+	"="
+	"ref"

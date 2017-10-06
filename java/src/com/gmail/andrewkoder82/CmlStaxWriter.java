@@ -44,6 +44,14 @@ public class CmlStaxWriter {
 		addPrefix(field);
 		out.append(Long.toString(val)).append("\n");		
 	}
+	public void writeBool(String field, boolean val) throws IOException {
+		addPrefix(field);
+		out.append(val ? "+" : "-").append("\n");		
+	}
+	public void writeFloat(String field, double val) throws IOException {
+		addPrefix(field);
+		out.append(Double.toString(val)).append("\n");		
+	}
 	public void writeString(String field, String val) throws IOException {
 		addPrefix(field);
 		StringBuilder r = new StringBuilder();

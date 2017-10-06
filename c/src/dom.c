@@ -19,6 +19,7 @@ struct d_var_tag {
 struct d_field_tag {
 	const char *name;
 	int index;
+	d_type *type;
 	d_field *next;
 };
 
@@ -50,6 +51,10 @@ struct d_dom_tag {
 	d_type *types;
 };
 
+struct d_str {
+	char val_length[1];
+};
+
 static void *d_alloc(d_dom *dom, int size) {
 	void **r = (void**) malloc(size + sizeof(void*));
 	*r = dom->allocated;
@@ -62,10 +67,10 @@ static void init_array(d_array *arr) {
 	arr->items = 0;
 }
 
-static const char *make_str(d_dom *dom, const char *s) {
+d_str *d_make_str(d_dom *dom, const char *s) {
 	char *r = (char *) d_alloc(dom, strlen(s) + 1);
 	strcpy(r, s);
-	return r;
+	return (d_str*) r;
 }
 
 static const char *make_md_str(const char *s) {
@@ -175,6 +180,7 @@ d_field *d_add_field(d_type *type, const char *name) {
 	r->name = make_md_str(name);
 	r->index = type->size++;
 	r->next = type->fields;
+	r->type = type;
 	type->fields = r;
 	return r;
 }
@@ -196,26 +202,26 @@ const char *d_field_name(d_field *field) {
 }
 
 
-d_type *d_get_type(d_var *s) {
-	return s && s->type == CMLD_STRUCT ? s->struct_val->type : 0;
+d_type *d_ref_get_type(d_struct *s) {
+	return s ? s->type : 0;
 }
 
-d_var *d_peek_field(d_var *s, d_field *field) {
-	return s && field && s->type == CMLD_STRUCT && field->index < s->struct_val->fields.size ?
-		s->struct_val->fields.items + field->index :
+d_var *d_ref_peek_field(d_struct *s, d_field *field) {
+	return s && field && field->type == s->type && field->index < s->fields.size ?
+		s->fields.items + field->index :
 		0;
 }
 
-d_var *d_get_field(d_var *s, d_field *field) {
-	if (!s || !field || s->type != CMLD_STRUCT)
+d_var *d_ref_get_field(d_struct *s, d_field *field) {
+	if (!s || !field || field->type != s->type)
 		return 0;
-	if (s->struct_val->fields.size != s->struct_val->type->size)
+	if (s->fields.size != s->type->size)
 		array_insert(
-			&s->struct_val->fields,
-			s->struct_val->type->dom,
-			s->struct_val->fields.size,
-			s->struct_val->type->size - s->struct_val->fields.size + 1);
-	return s->struct_val->fields.items + field->index;
+			&s->fields,
+			s->type->dom,
+			s->fields.size,
+			s->type->size - s->fields.size + 1);
+	return s->fields.items + field->index;
 }
 
 d_var *d_at(d_var *s, int index) {
@@ -232,8 +238,8 @@ long long d_as_int(d_var *v, long long def_val) {
 	return v && v->type == CMLD_INT ? v->int_val : def_val;
 }
 
-const char *d_as_str(d_var *v, const char *def_val) {
-	return v && v->type == CMLD_STR ? v->str_val : def_val;
+d_str *d_as_str_ref(d_var *v) {
+	return v && v->type == CMLD_STR ? (d_str*) v->str_val : 0;
 }
 
 void d_set_int(d_var *dst, long long val) {
@@ -243,10 +249,10 @@ void d_set_int(d_var *dst, long long val) {
 	} 
 }
 
-void d_set_str(d_var *dst, d_dom *dom, const char *val) {
-	if (dst) {
+void d_set_str_ref(d_var *dst, d_str *ref) {
+	if (dst && ref) {
 		dst->type = CMLD_STR;
-		dst->str_val = make_str(dom, val);
+		dst->str_val = (char*) ref;
 	}
 }
 
@@ -261,49 +267,54 @@ d_var *d_set_array(d_var *dst, d_dom *dom, int size) {
 	return dst;
 }
 
-d_var *d_set_struct(d_var *dst, d_type *type) {
+d_struct *d_make_struct(d_type *type) {
+	if (type) {
+		d_struct *r = (d_struct*) d_alloc(type->dom, sizeof(d_struct));
+		r->name = 0;
+		r->type = type;
+		r->tag = 0;
+		init_array(&r->fields);
+		return r;
+	}
+	return 0;
+}
+
+d_var *d_set_ref(d_var *dst, d_struct *src) {
 	if (dst) {
 		dst->type = CMLD_STRUCT;
-		dst->struct_val = (d_struct*) d_alloc(type->dom, sizeof(d_struct));
-		dst->struct_val->name = 0;
-		dst->struct_val->type = type;
-		dst->struct_val->tag = 0;
-		init_array(&dst->struct_val->fields);
+		dst->struct_val = src;
 	}
 	return dst;
 }
 
-d_var *d_set_ref(d_var *dst, void *src_id) {
-	if (dst) {
-		dst->type = CMLD_STRUCT;
-		dst->struct_val = (d_struct*) src_id;
-	}
-	return dst;
-}
-
-void *d_get_id(d_var *s) {
+d_struct *d_get_ref(d_var *s) {
 	return s && s->type == CMLD_STRUCT ? s->struct_val : 0;
 }
 
-void d_set_tag(d_var *s, size_t tag) {
-	if (s && s->type == CMLD_STRUCT)
-		s->struct_val->tag = tag;
+void d_set_ref_tag(d_struct *s, size_t tag) {
+	if (s)
+		s->tag = tag;
 }
 
-size_t d_get_tag(d_var *s) {
-	return s && s->type == CMLD_STRUCT ? s->struct_val->tag : 0;
+size_t d_get_ref_tag(d_struct *s) {
+	return s ? s->tag : 0;
 }
 
-void d_untag(d_var *v) {
+static void d_untag_var(d_var *v) {
 	if (v->type == CMLD_ARRAY) {
 		int c = v->array_val->size + 1;
 		for (v = v->array_val->items; --c;)
-			d_untag(v++);
-	} else if (v->type == CMLD_STRUCT && v->struct_val->tag) {
-		int c = v->struct_val->fields.size + 1;
-		v->struct_val->tag = 0;
-		for (v = v->struct_val->fields.items; --c;)
-			d_untag(v++);
+			d_untag_var(v++);
+	} else if (v->type == CMLD_STRUCT)
+		d_untag(v->struct_val);
+}
+void d_untag(d_struct *s) {
+	if (s->tag) {
+		int c = s->fields.size + 1;
+		d_var *v = s->fields.items;
+		s->tag = 0;
+		while (--c)
+			d_untag_var(v++);
 	}
 }
 
@@ -320,6 +331,14 @@ d_var *d_root(d_dom *dom) {
 	return &dom->root;
 }
 
+void d_move(d_var *dst, d_var *src) {
+	if (dst && src) {
+		dst->type = src->type;
+		dst->int_val = src->int_val;
+		src->type = CMLD_UNDEFINED;
+	}
+}
+
 static int get_named_index(d_dom *dom, const char *name) {
 	int i = dom->named.size;
 	while (--i >= 0)
@@ -328,17 +347,17 @@ static int get_named_index(d_dom *dom, const char *name) {
 	return -1;
 }
 
-d_var *d_get_named(d_dom *dom, const char *name) {
+d_struct *d_get_named(d_dom *dom, const char *name) {
 	int i = get_named_index(dom, name);
-	return i < 0 ? 0 : &dom->named.items[i];
+	return i < 0 ? 0 : dom->named.items[i].struct_val;
 }
 
-const char *d_get_name(d_var *target) {
-	return target && target->type == CMLD_STRUCT ? target->struct_val->name : 0;
+const char *d_get_ref_name(d_struct *target) {
+	return target ? target->name : 0;
 }
-void d_set_name(d_var *struc, const char *name) {
-	if (struc && struc->type == CMLD_STRUCT) {
-		d_struct* target = struc->struct_val;
+
+void d_set_ref_name(d_struct *target, const char *name) {
+	if (target) {
 		d_dom *dom = target->type->dom;
 		int my_prev_name = target->name ? get_named_index(target->type->dom, target->name) : -1;
 		int old_name_bind = get_named_index(dom, name);
@@ -347,7 +366,7 @@ void d_set_name(d_var *struc, const char *name) {
 				int i = array_insert(&dom->named, dom, dom->named.size, 1);
 				dom->named.items[i].type = CMLD_STRUCT;
 				dom->named.items[i].struct_val = target;
-				target->name = make_str(dom, name);
+				target->name = (char*) d_make_str(dom, name);
 			} else {
 				d_struct *old = dom->named.items[old_name_bind].struct_val;
 				target->name = old->name;
@@ -356,7 +375,7 @@ void d_set_name(d_var *struc, const char *name) {
 			}
 		} else {
 			if (old_name_bind < 0) {
-				target->name = make_str(dom, name);
+				target->name = (char*) d_make_str(dom, name);
 			} else {
 				d_struct *old = dom->named.items[old_name_bind].struct_val;
 				if (old != target) {

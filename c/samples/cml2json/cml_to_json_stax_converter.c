@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "cml_stax_reader.h"
-#include "utf8.h"
+#include "../../src/cml_stax_reader.h"
+#include "../../src/utf8.h"
 
 FILE *in, *out;
 cml_stax_reader *rd;

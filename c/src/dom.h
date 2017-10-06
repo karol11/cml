@@ -131,6 +131,13 @@ enum d_kinds {
 void d_undefine(d_var *v);
 
 //
+// Moves src node to dst.
+// Old dst value discarded.
+// Src node becomes undefined.
+//
+void d_move(d_var *dst, d_var *src);
+
+//
 // Makes this node INT and sets its int64_t value.
 //
 void d_set_int(d_var *dst, long long val);
@@ -141,19 +148,31 @@ void d_set_int(d_var *dst, long long val);
 //
 long long d_as_int(d_var *src, long long def_val);
 
+
+typedef struct d_str_tag d_str;
+d_str *d_make_str(d_dom *dom, const char *val);
+
 //
 // Sets node type to CMLD_STR and stores text in it.
 // The text is stored as copy in newly allocated buffer.
 //
-void d_set_str(d_var *dst, d_dom *dom, const char *val);
+void d_set_str_ref(d_var *dst, d_str *ref);
+
+static void d_set_str(d_var *dst, d_dom *dom, const char *val) {
+	d_set_str_ref(dst, d_make_str(dom, val));
+}
 
 //
 // Returns a string value of given node if it is CMLD_STR or
 // def_val otherwise.
 // Returned pointer is valid till d_dispose_dom or d_gc call.
 //
-const char *d_as_str(d_var *src, const char *def_val);
+d_str *d_as_str_ref(d_var *src);
 
+static const char *d_as_str(d_var *src, const char *def_val) {
+	d_str *r = d_as_str_ref(src);
+	return r ? (const char*) r : def_val;
+}
 
 //
 // --------------- Data Manipulation Routines for Arrays ----------
@@ -198,16 +217,43 @@ void d_delete(d_var *array, d_dom *dom, int at, int count);
 //
 // --------------- Data Manipulation Routines for Structures ----------
 //
+typedef struct d_struct_tag d_struct;
+d_struct *d_make_struct(d_type *type);
+
+//
+// Returns structure reference, that remains the same during this struct lifetime.
+// It can be used:
+// - to check against null reference
+// - to check if two d_vars reference the same structure.
+// - to check against maps<> and sets<> of structures for graph traversing etc.
+// Garbage collection kills unused structures making refs invalid.
+// See d_gc for details.
+//
+d_struct *d_get_ref(d_var *struc);
+
+//
+// Makes dst referencing the structure with given id.
+// This allows arbitrary data topology beyond the tree-like structures.
+// The DOM and the CML format can deal with any topology, even having cycles
+// in reference graph.
+//
+d_var *d_set_ref(d_var *dst, d_struct *src);
 
 //
 // Creates a new struct and stores it in given node.
 //
-d_var *d_set_struct(d_var *dst, d_type *type);
+static d_var *d_set_struct(d_var *dst, d_type *type) {
+	return d_set_ref(dst, d_make_struct(type));
+}
 
 //
 // Returns the struct type descriptor.
 //
-d_type *d_get_type(d_var *struc);
+d_type *d_ref_get_type(d_struct *struc);
+
+static d_type *d_get_type(d_var *struc) {
+	return d_ref_get_type(d_get_ref(struc));
+}
 
 //
 // Returns the structure field.
@@ -225,7 +271,11 @@ d_type *d_get_type(d_var *struc);
 // This code has no effect: d_set_int(d_peek_field(my_struct, my_field), 42);
 // For storing data use d_get_field instead.
 //
-d_var *d_peek_field(d_var *struc, d_field *field);
+d_var *d_ref_peek_field(d_struct *struc, d_field *field);
+
+static d_var *d_peek_field(d_var *struc, d_field *field) {
+	return d_ref_peek_field(d_get_ref(struc), field);
+}
 
 //
 // Returns the structure field.
@@ -235,42 +285,35 @@ d_var *d_peek_field(d_var *struc, d_field *field);
 // The 'd_get_field' is useful for data storing:
 // d_set_int(d_get_field(my_struct, my_field), 42);
 //
-d_var *d_get_field(d_var *struc, d_field *field);
+d_var *d_ref_get_field(d_struct *struc, d_field *field);
 
-//
-// Returns structure id, that remains the same during this struct lifetime.
-// It can be used:
-// - to check against null reference
-// - to check if two d_vars reference the same structures.
-// - to check against maps<> and sets<> of structures for graph traversing etc.
-// Garbage collection kills unused structures making id invalid.
-// See d_gc for details.
-//
-void *d_get_id(d_var *struc);
-
-//
-// Makes dst referencing the structure with given id.
-// This allows arbitrary data topology beyond the tree-like structures.
-// The DOM and the CML format can deal with any topology, even having cycles
-// in reference graph.
-//
-d_var *d_set_ref(d_var *dst, void *src_id);
+static d_var *d_get_field(d_var *struc, d_field *field) {
+	return d_ref_get_field(d_get_ref(struc), field);
+}
 
 //
 // Sets tag on structure.
 // This is useful for detecting cycles in graph traversing.
 //
-void d_set_tag(d_var *struc, size_t tag);
+void d_set_ref_tag(d_struct *struc, size_t tag);
+
+static void d_set_tag(d_var *struc, size_t tag) {
+	d_set_ref_tag(d_get_ref(struc), tag);
+}
 
 //
 // Gets tag.
 //
-size_t d_get_tag(d_var *struc);
+size_t d_get_ref_tag(d_struct *struc);
+
+static size_t d_get_tag(d_var *struc) {
+	return d_get_ref_tag(d_get_ref(struc));
+}
 
 //
 // Remove all tags tracing DOM starting at given d_var.
 //
-void d_untag(d_var *root);
+void d_untag(d_struct *root);
 
 //
 // --------------------------- Name Manipulation Routines -----------------
@@ -281,17 +324,25 @@ void d_untag(d_var *root);
 // If given struct had dad a name, the old name is removed.
 // If this name had been assigned to a different struct, it becomes unnamed.
 //
-void d_set_name(d_var *target, const char *name);
+void d_set_ref_name(d_struct *target, const char *name);
+
+static void d_set_name(d_var *target, const char *name) {
+	d_set_ref_name(d_get_ref(target), name);
+}
 
 //
 // Get struct by name.
 //
-d_var *d_get_named(d_dom *dom, const char *name);
+d_struct *d_get_named(d_dom *dom, const char *name);
 
 //
 // Get struct name.
 //
-const char *d_get_name(d_var *target);
+const char *d_get_ref_name(d_struct *target);
+
+static const char *d_get_name(d_var *target) {
+	return d_get_ref_name(d_get_ref(target));
+}
 
 //
 // ------------------------ Garbage Collector
