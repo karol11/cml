@@ -157,10 +157,12 @@ d_type *d_add_type(d_dom *dom, const char *name) {
 }
 
 d_field *d_lookup_field(d_type *type, const char *name) {
-	d_field * r = type->fields;
-	for (; r; r = r->next) {
-		if (strcmp(r->name, name) == 0)
-			return r;
+	if (type) {
+		d_field * r = type->fields;
+		for (; r; r = r->next) {
+			if (strcmp(r->name, name) == 0)
+				return r;
+		}
 	}
 	return 0;
 }
@@ -178,11 +180,11 @@ d_field *d_add_field(d_type *type, const char *name) {
 }
 
 d_field *d_enumerate_fields(d_type *type) {
-	return type->fields;
+	return type ? type->fields : 0;
 }
 
 d_field *d_next_field(d_field *f) {
-	return f->next;
+	return f ? f->next : 0;
 }
 
 const char *d_type_name(d_type *type) {
@@ -199,13 +201,13 @@ d_type *d_get_type(d_var *s) {
 }
 
 d_var *d_peek_field(d_var *s, d_field *field) {
-	return s && s->type == CMLD_STRUCT && field->index < s->struct_val->fields.size ?
+	return s && field && s->type == CMLD_STRUCT && field->index < s->struct_val->fields.size ?
 		s->struct_val->fields.items + field->index :
 		0;
 }
 
 d_var *d_get_field(d_var *s, d_field *field) {
-	if (!s || s->type != CMLD_STRUCT)
+	if (!s || !field || s->type != CMLD_STRUCT)
 		return 0;
 	if (s->struct_val->fields.size != s->struct_val->type->size)
 		array_insert(

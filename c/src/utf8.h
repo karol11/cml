@@ -1,6 +1,10 @@
 #ifndef _UTF8_H_
 #define _UTF8_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // Decodes a single unicode symbol from the sequence of bytes containing UTF-8 character representation.
 // Also decodes utf16 surrogate pairs if they are transcoded by utf16->utf8 converter.
@@ -20,9 +24,13 @@ int get_utf8(int (*get_fn)(void *context), void *get_fn_context);
 // put_fn - function to be called to store bytes.
 //    If it returs <= 0, encoding is terminated
 // put_fn_context - cntext data to be passed to put_fn.
-// Returns the result of last put_fn call, or 0 if the character out of allowed range.
+// Returns the result of last put_fn call, or 0 if the character is out of allowed range.
 // For examples see utf8_tests.
 //
 int put_utf8(int character, int (*put_fn)(void *context, char byte), void *put_fn_context);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

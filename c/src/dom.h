@@ -1,6 +1,9 @@
 #ifndef _CML_DOM_H_
 #define _CML_DOM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //
 // ------------------ DOM manipulation routines -------------
 //
@@ -319,5 +322,9 @@ void d_gc(
 // Can't be called outside the gc d_gc marker function.
 //
 void d_gc_mark(void *struct_id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

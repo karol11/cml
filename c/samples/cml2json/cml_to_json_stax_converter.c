@@ -6,6 +6,10 @@ FILE *in, *out;
 cml_stax_reader *rd;
 int tabs = 1;
 
+const char *typeField;
+const char *idField;
+const char *refField;
+
 int getc_in(void *unused) {
 	return getc(in);
 }
@@ -51,11 +55,11 @@ int traverse(int k) {
 	case CMLR_START_STRUCT:
 		fprintf(out, "{\r");
 		indent(++tabs);
-		fprintf(out, "\"$\":\"%s\"", cmlr_type(rd));
+		fprintf(out, "\"%s\":\"%s\"", typeField, cmlr_type(rd));
 		if (*cmlr_id(rd)) {
 			fprintf(out, ",\n");
 			indent(tabs);
-			fprintf(out, "\"#\":\"%s\"", cmlr_id(rd));
+			fprintf(out, "\"%s\":\"%s\"", idField, cmlr_id(rd));
 		}
 		while ((k = cmlr_next(rd)) != CMLR_END_STRUCT) {
 			fprintf(out, ",\n");
@@ -69,7 +73,7 @@ int traverse(int k) {
 		fprintf(out, "}");
 		break;
 	case CMLR_REF:
-		fprintf(out, "{\"=\":\"%s\"}", cmlr_id(rd));
+		fprintf(out, "{\"%s\":\"%s\"}", refField, cmlr_id(rd));
 		break;
 	case CMLR_START_ARRAY:
 		{
@@ -97,9 +101,13 @@ int traverse(int k) {
 
 int main(int argc, const char **args) {
 	int r = 0;
-	if (argc == 3) {
+	if (argc >= 3) {
 		in = fopen(args[1], "r");
 		out = fopen(args[2], "w");
+		typeField = argc >= 4 ? args[3] : "$";
+		idField = argc >= 5 ? args[4] : "#";
+		refField = argc >= 6 ? args[5] : "=";
+
 		if (!in || !out) {
 			fprintf(stderr, "can't open %s", in ? args[2] : args[1]);
 			return -1;
@@ -110,6 +118,6 @@ int main(int argc, const char **args) {
 		fclose(in);
 		fclose(out);
 	} else
-		printf("usage in_cml_file out_json_file\n");
+		printf("usage in_cml_file out_json_file [optional_type_field] [optional_id_field] [optional_ref_field]\n");
 	return r;
 }

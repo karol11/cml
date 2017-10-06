@@ -1,6 +1,10 @@
 #ifndef _CML_STAX_READER_H_
 #define _CML_STAX_READER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct cml_stax_reader_tag cml_stax_reader;
 
 cml_stax_reader *cmlr_create(
@@ -31,5 +35,9 @@ const char *cmlr_field(cml_stax_reader *);
 int cmlr_line_num(cml_stax_reader *);
 int cmlr_char_pos(cml_stax_reader *);
 const char *cmlr_error(cml_stax_reader *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

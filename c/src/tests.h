@@ -1,6 +1,10 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef TESTS
 
 #define STR(A) #A
@@ -13,6 +17,10 @@ void *test_malloc(int size);
 void test_free(void *);
 void fail(const char *s);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

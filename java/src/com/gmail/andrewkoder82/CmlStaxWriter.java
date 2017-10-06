@@ -3,9 +3,7 @@ package com.gmail.andrewkoder82;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CmlStaxWriter {	
 	boolean inArray = true;
@@ -48,7 +46,19 @@ public class CmlStaxWriter {
 	}
 	public void writeString(String field, String val) throws IOException {
 		addPrefix(field);
-		out.append('"').append(val.replace("\"", "\"\"")).append("\"\n");		
+		StringBuilder r = new StringBuilder();
+		for (int i = 0, n = val.length(); i < n; ++i) {
+			char c = val.charAt(i);
+			if (c <= 0x1f || (c >= 0x7f && c <= 0x9f) || c == 0x2028 || c == 0x2029)
+				r.append("\\u").append(String.format("%04X ", c));				
+			else if (c == '"')
+				r.append("\\\"");
+			else if (c == '\\')
+				r.append("\\\\");
+			else
+				r.append(c);
+		}
+		out.append('"').append(r).append("\"\n");
 	}
 	public void writeRef(String field, String id) throws IOException {
 		addPrefix(field);

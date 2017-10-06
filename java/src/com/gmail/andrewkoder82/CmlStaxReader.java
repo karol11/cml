@@ -47,12 +47,17 @@ public class CmlStaxReader {
 		if (match('"')) {
 			StringBuilder r = new StringBuilder();
 			for (;; nextChar()) {
-				if (cur == '"') {
-					nextChar();
-					if (cur == '"')
-						r.append('"');
-					else
-						break;
+				if (cur == '\\') {
+					switch (nextChar()) {
+					case '\\': r.append('\\'); break;
+					case '\"': r.append('\"'); break;
+					case 'u':
+						r.append((char) (nextHex() << 12 | nextHex() << 8 | nextHex() << 4 | nextHex()));
+					default:
+						error("unexpected string escape "+ (char)cur);
+					}
+				} else if (cur == '"') {
+					break;
 				} else if (cur == -1)
 					error("string not terminated");
 				else
@@ -73,6 +78,16 @@ public class CmlStaxReader {
 		boolean hasFields = inArray ? indentPos == objectIndent : indentPos > objectIndent;
 		pushState(false, hasFields ? indentPos : indentPos + 1);
 		return R_STRUCT_START;
+	}
+
+	private int nextHex() throws IOException {
+		nextChar();
+		if (cur >= '0' && cur <= '9')
+			return cur - '0';
+		if (cur >= 'a' && cur <= 'f')
+			return cur - 'a' + 10;
+		error("unexpected hexadecimal char " + (char) cur);
+		return 0;
 	}
 
 	public String getField() {
@@ -128,6 +143,7 @@ public class CmlStaxReader {
 		return cur == '\n' || cur == '\r' || cur < 0;
 	}
 	void expectedNewLine() throws IOException {
+		skipWs();
 		if (cur == '\n') {
 			if (nextChar() == '\r')
 				nextChar();
@@ -170,7 +186,7 @@ public class CmlStaxReader {
 		return
 			(c >= 'a' && c <= 'z') ||
 			(c >= 'A' && c <= 'Z') ||
-			c == '$' || c == '_';
+			c == '$' || c == '_' || c == '/' || c == '\\';
 	}
 	boolean isDigit(int c) {
 		return c >= '0' && c <= '9';

@@ -1,11 +1,13 @@
 CC=gcc
 CCFLAGS=-Wall -O3 -I../../src
 
-TARGET=cml2json
+TARGET=json2cml
 SRCS=\
-	cml_to_json_stax_converter.c\
+	json_to_cml_converter.c\
 	../../src/string_builder.c\
-	../../src/cml_stax_reader.c\
+	../../src/cml_stax_writer.c\
+	../../src/cml_dom_writer.c\
+	../../src/dom.c\
 	../../src/utf8.c
 
 OBJS=$(SRCS:.c=.o)

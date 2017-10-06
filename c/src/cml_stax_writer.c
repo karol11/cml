@@ -9,6 +9,7 @@ struct cml_stax_writer_tag {
 	void *putc_context;
 	int depth;
 	int in_array;
+	int array_just_started;
 	int in_error;
 };
 
@@ -26,6 +27,7 @@ static int write_head(cml_stax_writer *w, const char *field) {
 	int i = w->depth + 1;
 	if (w->in_error)
 		return CMLW_WRITE_AFTER_ERROR;
+	w->array_just_started = 0;
 	while (--i) {
 		if (!w->putc(w->putc_context, '\t'))
 			return w->in_error = CMLW_PUTC_ERROR;
@@ -46,13 +48,14 @@ static int get_c(void *context) {
 }
 
 cml_stax_writer *cmlw_create(int (*putc)(void *context, char c), void *putc_context) {
-	cml_stax_writer *r = (cml_stax_writer *) malloc(sizeof(cml_stax_writer));
-	r->depth = 0;
-	r->in_array = 1;
-	r->in_error = 0;
-	r->putc = putc;
-	r->putc_context = putc_context;
-	return r;
+	cml_stax_writer *w = (cml_stax_writer *) malloc(sizeof(cml_stax_writer));
+	w->depth = 0;
+	w->in_array = 1;
+	w->in_error = 0;
+	w->array_just_started = 1;
+	w->putc = putc;
+	w->putc_context = putc_context;
+	return w;
 }
 
 void cmlw_dispose(cml_stax_writer *w) {
@@ -95,7 +98,7 @@ int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 					return w->in_error;
 			}
 		}
-		if (put_utf8(c, w->putc, w->putc_context))
+		if (!put_utf8(c, w->putc, w->putc_context))
 			return w->in_error = CMLW_PUTC_ERROR;
 	}
 	return put_s(w, "\"\n");
@@ -107,16 +110,20 @@ int cmlw_array(cml_stax_writer *w, const char *field) {
 		return w->in_error;
 	w->depth++;
 	w->in_array = 1;
+	w->array_just_started = 1;
 	return put_s(w, ":\n") ? w->in_error : r;
 }
 
 int cmlw_end_array(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
+	w->array_just_started = 0;
 	return w->depth == 0 ? w->in_error = CMLW_UNPAIRED_END : (w->depth--, 0);
 }
 
 int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const char *id) {
 	int r = w->in_array;
+	if (w->in_array && !w->array_just_started && !w->putc(w->putc_context, '\n'))
+		return w->in_error = CMLW_PUTC_ERROR;
 	if (write_head(w, field) || put_s(w, type))
 		return w->in_error;
 	if (id && (!w->putc(w->putc_context, '.') || put_s(w, id)))
@@ -129,11 +136,12 @@ int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const c
 
 int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
-	if (w->depth)
+	if (w->in_array) {}
+	else if (w->depth)
 		w->depth--;
 	else
 		return w->in_error = CMLW_UNPAIRED_END;
-	return !w->in_array || w->putc(w->putc_context, '\n') ? 0 : CMLW_PUTC_ERROR;
+	return 0;
 }
 
 int cmlw_ref(cml_stax_writer *w, const char *field, const char *id) {
