@@ -8,7 +8,9 @@ SRCS=\
 	../../src/cml_stax_writer.c\
 	../../src/cml_dom_writer.c\
 	../../src/dom.c\
-	../../src/utf8.c
+	../../src/utf8.c\
+	../../src/cml_stax_reader.c\
+	../../src/cml_dom_reader.c
 
 OBJS=$(SRCS:.c=.o)
 DEPS=$(SRCS:.c=.depends)

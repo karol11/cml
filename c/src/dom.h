@@ -120,6 +120,7 @@ int d_kind(d_var *v);
 enum d_kinds {
 	CMLD_UNDEFINED,
 	CMLD_INT,
+	CMLD_BOOL,
 	CMLD_STR,
 	CMLD_STRUCT,
 	CMLD_ARRAY,
@@ -148,6 +149,16 @@ void d_set_int(d_var *dst, long long val);
 //
 long long d_as_int(d_var *src, long long def_val);
 
+//
+// Makes this node BOOL and sets its value.
+//
+void d_set_bool(d_var *dst, int val);
+
+//
+// Returns bool value stored in data node
+// or def_val if this node is not a CMLD_BOOL.
+//
+int d_as_bool(d_var *src, int def_val);
 
 typedef struct d_str_tag d_str;
 d_str *d_make_str(d_dom *dom, const char *val);

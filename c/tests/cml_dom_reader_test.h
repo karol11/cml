@@ -28,6 +28,7 @@ void cml_dom_reader_test() {
 		"					weight 400\n"
 		"					size 12\n"
 		"					color 0\n"
+		"					italic -\n"
 		"				size 24\n"
 		"				color 16436877\n"
 		"\n"
@@ -41,6 +42,7 @@ void cml_dom_reader_test() {
 		"		text \"world!\\\\\\\"\"\n"
 		"		style TextStyle.bold\n"
 		"			weight 600\n"
+		"			italic +\n"
 		"			parent=main_style\n";
 	d_dom *d = cml_read(getc_asciiz, &t, 0, 0);
 	string_builder sb;
@@ -49,9 +51,9 @@ void cml_dom_reader_test() {
 	ASSERT(strcmp(sb_get_str(&sb),
 		"Page{items:[Page:header{size:20align:1items:[Image:logo{url:\"logo.gif\\\"\"size:20align:2},"
 		"TextBox:title{content:[Span{style:TextStyle{color:16436877size:24parent:TextStyle:main_style{"
-		"color:0size:12weight:400family:\"Arial\"}}text:\"\x0d\x0a\xd0\x91\xEF\xBF\xBFTitle\"}]}]},"
+		"italic:falsecolor:0size:12weight:400family:\"Arial\"}}text:\"\x0d\x0a\xd0\x91\xEF\xBF\xBFTitle\"}]}]},"
 		"TextBox:mainText{content:[Span{style:=main_styletext:\"Hello \"},Span{style:TextStyle:bold{"
-		"weight:600parent:=main_style}text:\"world!\\\"\"}]}]}") == 0);
+		"italic:trueweight:600parent:=main_style}text:\"world!\\\"\"}]}]}") == 0);
 	d_dispose_dom(d);
 	sb_dispose(&sb);
 }

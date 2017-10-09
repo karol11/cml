@@ -21,6 +21,7 @@ public class Sample {
 		CmlStaxReader d = new CmlStaxReader(new StringReader(
 				"Polygon\n"+
 				"name \"Test text\"\n"+
+				"visible +\n"+
 				"points:\n"+
 				"  Point.p1\n"+
 				"  x 1\n"+
@@ -47,8 +48,11 @@ public class Sample {
 				json.append(prefix);
 			}
 			switch (i) {
-			case CmlStaxReader.R_INT:
+			case CmlStaxReader.R_LONG:
 				json.append(d.getLongVal());
+				break;    
+			case CmlStaxReader.R_BOOL:
+				json.append(d.getBoolVal() ? "true" : "false");
 				break;    
 			case CmlStaxReader.R_STRING:
 				json.append("\"" + d.getStrVal().replace("\"", "\\\"") + "\"");
@@ -92,14 +96,14 @@ public class Sample {
 			"points:\n"+
 			"  Point.p1\n"+
 			"  x 1\n"+
-			"  y 42\n"+
+			"  y -42.5e-10\n"+
 			"ordered:\n"+
 			"  =p1"));
 
 		CmlDomWriter.write(d, new OutputStreamWriter(System.out));				
 
 		for (DomQuery i: query(d.root).field("points"))
-			System.out.println("x=" + i.field("x").asInt(-1) + " y=" + i.field("y").asInt(-1));
+			System.out.println("x=" + i.field("x").asDouble(-1) + " y=" + i.field("y").asDouble(-1));
 	}
 
 	private static void testWriter() throws IOException {

@@ -72,6 +72,12 @@ int cmlw_int(cml_stax_writer *w, const char *field, long long value) {
 	return w->putc(w->putc_context, '\n') ? 0 : (w->in_error = CMLW_PUTC_ERROR);
 }
 
+int cmlw_bool(cml_stax_writer *w, const char *field, int value) {
+	if (write_head(w, field))
+		return w->in_error;
+	return put_s(w, value ? "+\n" : "-\n") ? w->in_error : 0;
+}
+
 int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 	int r = write_head(w, field);
 	if (r < 0)

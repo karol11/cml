@@ -12,6 +12,9 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 	}
 	switch (d_kind(v)) {
 	case CMLD_UNDEFINED: break;
+	case CMLD_BOOL:
+		sb_puts(r, d_as_bool(v, 0) ? "true" : "false");
+		break;
 	case CMLD_INT:
 		{
 			char buf[32];

@@ -15,6 +15,7 @@ void cmlr_dispose(cml_stax_reader *);
 
 enum cml_reader_states {
 	CMLR_INT,
+	CMLR_BOOL,
 	CMLR_STRING,
 	CMLR_START_STRUCT,
 	CMLR_END_STRUCT,
@@ -27,6 +28,7 @@ enum cml_reader_states {
 
 int cmlr_next(cml_stax_reader *);
 
+int cmlr_bool(cml_stax_reader *);
 long long cmlr_int(cml_stax_reader *);
 const char *cmlr_str(cml_stax_reader *);
 const char *cmlr_type(cml_stax_reader *);

@@ -25,8 +25,10 @@ public class CmlDomReader {
 	
 	Object parseNode(int type) throws IOException {
 		switch (type) {
-		case CmlStaxReader.R_INT: return stax.getLongVal();
+		case CmlStaxReader.R_LONG: return stax.getLongVal();
 		case CmlStaxReader.R_STRING: return stax.getStrVal();
+		case CmlStaxReader.R_BOOL: return stax.getBoolVal();
+		case CmlStaxReader.R_DOUBLE: return stax.getDblVal();
 		case CmlStaxReader.R_REF: 
 			{
 				String id = stax.getId(); 

@@ -197,11 +197,11 @@ int parse_val(d_var *dst) {
 	} else if (cur == 'f') {
 		if (!expected_str("false"))
 			return 0;
-		d_set_int(dst, 0);
+		d_set_bool(dst, 0);
 	} else if (cur == 't') {
 		if (!expected_str("true"))
 			return 0;
-		d_set_int(dst, 1);	
+		d_set_bool(dst, 1);	
 	} else
 		return 0;
 	return 1;

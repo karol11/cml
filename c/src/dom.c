@@ -10,6 +10,7 @@ struct d_var_tag {
 	int type;
 	union{
 		long long int_val;
+		int bool_val;
 		const char *str_val;
 		d_struct *struct_val;
 		d_array *array_val;
@@ -238,6 +239,10 @@ long long d_as_int(d_var *v, long long def_val) {
 	return v && v->type == CMLD_INT ? v->int_val : def_val;
 }
 
+int d_as_bool(d_var *v, int def_val) {
+	return v && v->type == CMLD_BOOL ? v->bool_val : def_val;
+}
+
 d_str *d_as_str_ref(d_var *v) {
 	return v && v->type == CMLD_STR ? (d_str*) v->str_val : 0;
 }
@@ -247,6 +252,13 @@ void d_set_int(d_var *dst, long long val) {
 		dst->type = CMLD_INT;
 		dst->int_val = val;
 	} 
+}
+
+void d_set_bool(d_var *dst, int val) {
+	if (dst) {
+		dst->type = CMLD_BOOL;
+		dst->bool_val = val;
+	}
 }
 
 void d_set_str_ref(d_var *dst, d_str *ref) {

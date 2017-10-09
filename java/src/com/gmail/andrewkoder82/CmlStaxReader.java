@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CmlStaxReader {
-	static public final int R_INT = 0;
+	static public final int R_LONG = 0;
 	static public final int R_STRING = 1;
 	static public final int R_STRUCT_START = 2;
 	static public final int R_STRUCT_END = 3;
@@ -14,7 +14,7 @@ public class CmlStaxReader {
 	static public final int R_ARRAY_START = 5;
 	static public final int R_ARRAY_END = 6;
 	static public final int R_BOOL = 7;
-	static public final int R_FLOAT = 8;
+	static public final int R_DOUBLE = 8;
 	static public final int R_EOF = 9;
 	
 	public CmlStaxReader(Reader in) throws IOException {
@@ -228,7 +228,7 @@ public class CmlStaxReader {
 		while (isIdLetter(nextChar()));
 		return r.toString();
 	}
-	long parseInt(int sign) throws IOException {
+	long parseInt() throws IOException {
 		long r = 0;
 		for (; isDigit(cur); nextChar()) {
 			long n = r * 10 + cur - '0';
@@ -236,10 +236,10 @@ public class CmlStaxReader {
 				error("long overflow");
 			r = n;
 		}
-		return r * sign;
+		return r;
 	}
 	int parseNum(int sign) throws IOException {
-		long r = parseInt(sign);
+		long r = parseInt();
 		for (; isDigit(cur); nextChar()) {
 			long n = r * 10 + cur - '0';
 			if (n < r)
@@ -254,14 +254,14 @@ public class CmlStaxReader {
 		}
 		if (match('e')) {
 			hasFractionPart = true;
-			frac = frac * Math.pow(parseInt(match('-') ? -1 : 1), 10);
+			frac = frac * Math.pow(10, (match('-') ? -1 : 1) * parseInt());
 		}
 		expectedNewLine();
 		if (hasFractionPart) {
-			dblVal = frac;
-			return R_FLOAT;
+			dblVal = frac * sign;
+			return R_DOUBLE;
 		}
-		longVal = r;
-		return R_INT;
+		longVal = r * sign;
+		return R_LONG;
 	}
 }

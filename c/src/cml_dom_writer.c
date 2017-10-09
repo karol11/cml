@@ -29,6 +29,7 @@ static int traverse(struct cml_stax_writer_data *d, d_var *v, const char *field)
 	switch (d_kind(v)) {
 	case CMLD_UNDEFINED: break;
 	case CMLD_INT: return cmlw_int(d->w, field, d_as_int(v, 0));
+	case CMLD_BOOL: return cmlw_bool(d->w, field, d_as_bool(v, 0));
 	case CMLD_STR: return cmlw_str(d->w, field, d_as_str(v, ""));
 	case CMLD_ARRAY:
 		{

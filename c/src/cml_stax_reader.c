@@ -19,6 +19,7 @@ struct cml_stax_reader_tag {
 	string_builder type;
 	string_builder field;
 	long long int_val;
+	int bool_val;
 	int line_number;
 	int char_pos;
 	const char *error;
@@ -199,6 +200,7 @@ void cmlr_dispose(cml_stax_reader *r) {
 	free(r);
 }
 
+int cmlr_bool(cml_stax_reader *r) { return r->bool_val; }
 long long cmlr_int(cml_stax_reader *r) { return r->int_val; }
 const char *cmlr_str(cml_stax_reader *r) { return sb_get_str(&r->str); }
 const char *cmlr_type(cml_stax_reader *r) { return sb_get_str(&r->type); }
@@ -284,8 +286,18 @@ int cmlr_next(cml_stax_reader *r) {
 		result = r->error ? CMLR_ERROR : CMLR_STRING;
 	} else if (is_digit(r->cur)) {
 		result = parse_int(r, 1);
-	} else if (r->cur == '-') {
-		result = parse_int(r, -1);
+	} else if (match(r, '+')) {
+		expected_new_line(r);
+		r->bool_val = 1;
+		result = r->error ? CMLR_ERROR : CMLR_BOOL;
+	} else if (match(r, '-')) {
+		if (is_digit(r->cur))
+			result = parse_int(r, -1);
+		else {
+			expected_new_line(r);
+			r->bool_val = 0;
+			result = r->error ? CMLR_ERROR : CMLR_BOOL;
+		}
 	} else {
 		get_id(r, &r->type, "expected type id");
 		if (match(r, '.'))
