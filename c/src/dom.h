@@ -124,6 +124,7 @@ enum d_kinds {
 	CMLD_STR,
 	CMLD_STRUCT,
 	CMLD_ARRAY,
+	CMLD_DOUBLE,
 };
 
 //
@@ -384,6 +385,14 @@ void d_gc(
 // Can't be called outside the gc d_gc marker function.
 //
 void d_gc_mark(void *struct_id);
+
+
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+
+double d_as_double(d_var *src, double def_val);
+void d_set_double(d_var *dst, double val);
+
+#endif
 
 #ifdef __cplusplus
 }

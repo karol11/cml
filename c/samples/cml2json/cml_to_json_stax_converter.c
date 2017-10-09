@@ -36,6 +36,9 @@ int traverse(int k) {
 	case CMLR_INT:
 		fprintf(out, "%lld", cmlr_int(rd));
 		break;
+	case CMLR_DOUBLE:
+		fprintf(out, "%lg", cmlr_double(rd));
+		break;
 	case CMLR_BOOL:
 		fprintf(out, "%s", cmlr_bool(rd) ?  "true" : "false");
 		break;

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "../../src/dom.h"
 #include "../../src/string_builder.h"
 #include "../../src/utf8.h"
@@ -125,6 +126,13 @@ int expected_str(const char *str) {
 	return 1;
 }
 
+long long get_int() {
+	long long r = 0;
+	for (; cur >= '0' && cur <= '9'; next())
+		r = r * 10 + cur - '0';
+	return r;
+}
+
 int parse_val(d_var *dst) {
 	if (match('[')) {
 		d_set_array(dst, raw, 0);
@@ -185,11 +193,22 @@ int parse_val(d_var *dst) {
 		d_set_str(dst, raw, v);
 	} else if (cur == '-' || (cur >= '0' && cur <= '9')) {
 		int sign = match('-') ? -1 : 1;
-		long long n = 0;
-		for (; cur >= '0' && cur <= '9'; next())
-			n = n * 10 + cur - '0';
-		//todo . e E
-		d_set_int(dst, n * sign);
+		long long n = get_int();
+		if (match('.')) {
+			double d = (double) n;
+			double p = 0.1;
+			for (; cur >= '0' && cur <= '9'; next(), p *= 0.1)
+				d += p * (cur - '0');
+			if (match('e')) {
+				int ps = match('-') ? -1 : 1;
+				d = d * pow(10, ps * (double) get_int());
+			}
+			d_set_double(dst, sign * d);
+		} else if (match('e')) {
+			int ps = match('-') ? -1 : 1;
+			d_set_double(dst, sign * (double)n * pow(10, ps * (double) get_int()));
+		} else
+			d_set_int(dst, n * sign);
 	} else if (cur == 'n') {
 		if (!expected_str("null"))
 			return 0;

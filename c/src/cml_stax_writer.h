@@ -25,4 +25,8 @@ int cmlw_struct(cml_stax_writer *writer, const char *field, const char *type, co
 int cmlw_end_struct(cml_stax_writer *writer, int prev_state);
 int cmlw_ref(cml_stax_writer *writer, const char *field, const char *id);
 
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+int cmlw_double(cml_stax_writer *writer, const char *field, double value);
+#endif
+
 #endif

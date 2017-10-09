@@ -24,6 +24,7 @@ enum cml_reader_states {
 	CMLR_END_ARRAY,
 	CMLR_EOF,
 	CMLR_ERROR,
+	CMLR_DOUBLE,
 };
 
 int cmlr_next(cml_stax_reader *);
@@ -37,6 +38,10 @@ const char *cmlr_field(cml_stax_reader *);
 int cmlr_line_num(cml_stax_reader *);
 int cmlr_char_pos(cml_stax_reader *);
 const char *cmlr_error(cml_stax_reader *);
+
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+double cmlr_double(cml_stax_reader *);
+#endif
 
 #ifdef __cplusplus
 }

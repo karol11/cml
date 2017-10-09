@@ -26,10 +26,10 @@ void cml_dom_reader_test() {
 		"				parent TextStyle.main_style\n"
 		"					family \"Arial\"\n"
 		"					weight 400\n"
-		"					size 12\n"
+		"					size 12.15\n"
 		"					color 0\n"
 		"					italic -\n"
-		"				size 24\n"
+		"				size 240e-2\n"
 		"				color 16436877\n"
 		"\n"
 		"	TextBox.mainText\n"
@@ -50,8 +50,8 @@ void cml_dom_reader_test() {
 	to_string(&sb, d_root(d), 0);
 	ASSERT(strcmp(sb_get_str(&sb),
 		"Page{items:[Page:header{size:20align:1items:[Image:logo{url:\"logo.gif\\\"\"size:20align:2},"
-		"TextBox:title{content:[Span{style:TextStyle{color:16436877size:24parent:TextStyle:main_style{"
-		"italic:falsecolor:0size:12weight:400family:\"Arial\"}}text:\"\x0d\x0a\xd0\x91\xEF\xBF\xBFTitle\"}]}]},"
+		"TextBox:title{content:[Span{style:TextStyle{color:16436877size:2.4parent:TextStyle:main_style{"
+		"italic:falsecolor:0size:12.15weight:400family:\"Arial\"}}text:\"\x0d\x0a\xd0\x91\xEF\xBF\xBFTitle\"}]}]},"
 		"TextBox:mainText{content:[Span{style:=main_styletext:\"Hello \"},Span{style:TextStyle:bold{"
 		"italic:trueweight:600parent:=main_style}text:\"world!\\\"\"}]}]}") == 0);
 	d_dispose_dom(d);

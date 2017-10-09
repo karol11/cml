@@ -5,6 +5,10 @@
 #include "string_builder.h"
 #include "utf8.h"
 
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+#include <math.h>
+#endif
+
 typedef struct cml_stax_state_tag {
 	struct cml_stax_state_tag *prev;
 	int indent;
@@ -19,6 +23,11 @@ struct cml_stax_reader_tag {
 	string_builder type;
 	string_builder field;
 	long long int_val;
+	
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+	double dbl_val;
+#endif
+
 	int bool_val;
 	int line_number;
 	int char_pos;
@@ -41,8 +50,10 @@ static int next_char(cml_stax_reader *r) {
 }
 
 static int error(cml_stax_reader *r, const char *e) {
-	if (!r->error)
+	if (!r->error) {
 		r->error = e;
+		return 1;
+	}
 	return 0;
 }
 
@@ -128,7 +139,7 @@ static void push_state(cml_stax_reader *r, int in_array, int indent) {
 	r->cur_state_indent = indent;
 }
 
-static int parse_int(cml_stax_reader *r, int sign) {
+static long long parse_int(cml_stax_reader *r) {
 	long long i = 0;
 	int c = r->cur;
 	for (; is_digit(c); c = next_char(r)) {
@@ -139,9 +150,33 @@ static int parse_int(cml_stax_reader *r, int sign) {
 		}
 		i = n;
 	}
-	expected_new_line(r);
+	return i;
+}
+
+static int parse_num(cml_stax_reader *r, int sign) {
+	long long i = parse_int(r);
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+	double fract;
+	int has_fract = match(r, '.');
+	if (has_fract) {
+		double p = 0.1;
+		int c = r->cur;
+		fract = (double) i;
+		for (; is_digit(c); c = next_char(r), p *= 0.1)
+			fract += p * (c - '0');
+	}
+	if (match(r, 'e')) {
+		int ps = match(r, '-') ? -1 : 1;
+		fract = (has_fract ? fract : (double)i) * pow(10, ps * (double) parse_int(r));
+		has_fract = 1;
+	}
+	if (has_fract) {
+		r->dbl_val = fract * sign;
+		return expected_new_line(r) ? CMLR_DOUBLE : CMLR_ERROR;
+	}
+#endif
 	r->int_val = i * sign;
-	return CMLR_INT;
+	return expected_new_line(r) ? CMLR_INT : CMLR_ERROR;
 }
 
 static int get_c_for_utf8(void *context) {
@@ -285,14 +320,14 @@ int cmlr_next(cml_stax_reader *r) {
 		expected_new_line(r);
 		result = r->error ? CMLR_ERROR : CMLR_STRING;
 	} else if (is_digit(r->cur)) {
-		result = parse_int(r, 1);
+		result = parse_num(r, 1);
 	} else if (match(r, '+')) {
 		expected_new_line(r);
 		r->bool_val = 1;
 		result = r->error ? CMLR_ERROR : CMLR_BOOL;
 	} else if (match(r, '-')) {
 		if (is_digit(r->cur))
-			result = parse_int(r, -1);
+			result = parse_num(r, -1);
 		else {
 			expected_new_line(r);
 			r->bool_val = 0;
@@ -316,3 +351,12 @@ int cmlr_next(cml_stax_reader *r) {
 	}
 	return r->error ? CMLR_ERROR : result;
 }
+
+
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+
+double cmlr_double(cml_stax_reader *r) {
+	return r->dbl_val;
+}
+
+#endif

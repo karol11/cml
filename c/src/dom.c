@@ -14,6 +14,9 @@ struct d_var_tag {
 		const char *str_val;
 		d_struct *struct_val;
 		d_array *array_val;
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+		double dbl_val;
+#endif
 	};
 };
 
@@ -482,3 +485,19 @@ void d_gc(d_dom *dom,
 		}
 	}
 }
+
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+
+double d_as_double(d_var *src, double def_val) {
+	return src && src->type == CMLD_DOUBLE ? src->dbl_val : def_val;
+}
+
+void d_set_double(d_var *dst, double val) {
+	if (dst) {
+		dst->type = CMLD_DOUBLE;
+		dst->dbl_val = val;
+	} 
+
+}
+
+#endif

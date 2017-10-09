@@ -158,3 +158,15 @@ int cmlw_ref(cml_stax_writer *w, const char *field, const char *id) {
 		!put_s(w, id) &&
 		w->putc(w->putc_context, '\n') ? 0 : (w->in_error = CMLW_PUTC_ERROR);
 }
+
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+
+int cmlw_double(cml_stax_writer *w, const char *field, double value) {
+	char buffer[32];
+	if (write_head(w, field))
+		return w->in_error;
+	sprintf(buffer,"%lg\n", value);
+	return put_s(w, buffer) ? w->in_error : 0;
+}
+
+#endif

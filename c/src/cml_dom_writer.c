@@ -31,6 +31,10 @@ static int traverse(struct cml_stax_writer_data *d, d_var *v, const char *field)
 	case CMLD_INT: return cmlw_int(d->w, field, d_as_int(v, 0));
 	case CMLD_BOOL: return cmlw_bool(d->w, field, d_as_bool(v, 0));
 	case CMLD_STR: return cmlw_str(d->w, field, d_as_str(v, ""));
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+	case CMLD_DOUBLE:
+		return cmlw_double(d->w, field, d_as_double(v, 0));
+#endif
 	case CMLD_ARRAY:
 		{
 			int i = -1, n = d_get_count(v);

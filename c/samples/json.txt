@@ -3,12 +3,12 @@
 		{			"type":"Page",
 			"id":"header",
 			"align":1,
-			"size":40,
+			"size":40.15,
 			"items":[
 				{					"type":"Image",
 					"id":"logo",
 					"align":2,
-					"size":20,
+					"size":20.1,
 					"url":"logo.gif"
 				},
 				{					"type":"TextBox",
@@ -43,7 +43,7 @@
 					"text":"嗨!",
 					"style":{						"type":"TextStyle",
 						"id":"bold",
-						"weight":600,
+						"weight":-600.12,
 						"parent":{"ref":"main_style"}
 					}
 				}

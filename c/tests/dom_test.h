@@ -15,6 +15,15 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 	case CMLD_BOOL:
 		sb_puts(r, d_as_bool(v, 0) ? "true" : "false");
 		break;
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+	case CMLD_DOUBLE:
+		{
+			char buf[32];
+			sprintf(buf, "%lg", d_as_double(v, 0));
+			sb_puts(r, buf);
+		}
+		break;
+#endif
 	case CMLD_INT:
 		{
 			char buf[32];
@@ -95,69 +104,6 @@ void dom_test() {
 		d_dispose_dom(d);
 		sb_dispose(&r);
 	}
-/*	d_type *page = d_add_type(d, "Page");
-	d_field *p_items = d_add_field(page, "items");
-
-	d_type *text_box = d_add_type(d, "TextBox");
-	d_field *tb_x = d_add_field(text_box, "align");
-	d_field *tb_y = d_add_field(text_box, "size");
-	d_field *tb_content = d_add_field(text_box, "items");
-
-	d_type *image = d_add_type(d, "Image");
-	d_field *im_x = d_add_field(image, "align");
-	d_field *im_y = d_add_field(image, "size");
-	d_field *im_url = d_add_field(image, "url");
-
-	d_type *span = d_add_type(d, "Span");
-	d_field *sp_text = d_add_field(span, "text");
-	d_field *sp_style = d_add_field(span, "style");
-
-	d_type *text_style = d_add_type(d, "TextStyle");
-	d_field *sf_family = d_add_field(span, "family");
-	d_field *sf_weight = d_add_field(span, "weight");
-	d_field *sf_size = d_add_field(span, "italic");
-	d_field *sf_size = d_add_field(span, "size");
-	d_field *sf_color = d_add_field(span, "color");
-	d_field *sf_parent = d_add_field(span, "parent");
-*/
-/*
-Page
-items:
-	Page.header
-	align 1
-	size 20
-	items:
-		Image.logo
-		align 2
-		size 20
-		url "logo.gif"
-
-		TextBox.title
-		content:
-			Span
-			text "Title"
-			style TextStyle
-				parent TextStyle.main_style
-					family "Arial"
-					weight 400
-					size 12
-					color 0
-				size 24
-				color 16436877
-
-	TextBox.mainText
-	content:
-		Span
-		text "Hello "
-		style=main_style
-
-		Span
-		text "world!"
-		style TextStyle.bold
-			weight 600
-			parent=main_style
-*/
-
 }
 
 #endif

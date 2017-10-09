@@ -9,6 +9,9 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 	const char *result = 0;
 	switch(type) {
 	case CMLR_INT: d_set_int(v, cmlr_int(r)); break;
+#ifdef CONFIG_LIBC_FLOATINGPOINT
+	case CMLR_DOUBLE: d_set_double(v, cmlr_double(r)); break;
+#endif
 	case CMLR_BOOL: d_set_bool(v, cmlr_bool(r)); break;
 	case CMLR_STRING: d_set_str(v, d, cmlr_str(r)); break;
 	case CMLR_START_STRUCT:
