@@ -1,0 +1,46 @@
+<html>
+
+<script src="cml.js"></script>
+
+<script>
+	"use strict";
+	
+	var d =	{
+		"type":"polygon",
+		"pos": {
+			"type":"reg",
+			"visible": true,
+			"name": "asdf\"xz\\cv"
+		},
+		"points": [
+			{
+				"type":"point",
+				"x": 12,
+				"y": 44.5
+			},
+			{
+				"type":"point",
+				"x": 1,
+				"y": 2
+			}
+		],
+		"first": null
+	};
+	d.first = d.points[1];
+	alert(cml.write(d, "type"));
+	
+	
+/*	d = cml.read(
+		'Polygon\n'+
+		'points:\n'+
+		'  Point\n'+
+		'  x 12\n'+
+		'  y 44.5\n'+
+		'\n'+
+		'  Point\n'+
+		'  x 1\n'+
+		'  y 2\n');
+	alert(d); */
+</script>
+
+</html>
