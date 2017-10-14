@@ -20,6 +20,11 @@ static void dump(cml_stax_reader *r, string_builder *s) {
 		}
 		switch(t) {
 		case CMLR_INT: sb_puts(s, _ltoa((long)cmlr_int(r), itoa_buf, 10)); break;
+		case CMLR_BOOL: sb_puts(s, cmlr_bool(r) ? "true" : "false"); break;
+		case CMLR_DOUBLE:
+			sprintf(itoa_buf, "%lg", cmlr_double(r));
+			sb_puts(s, itoa_buf);
+			break;
 		case CMLR_STRING:
 			sb_append(s, '\'');
 			sb_puts(s, cmlr_str(r));
@@ -92,13 +97,33 @@ void cml_stax_reader_test() {
 	string_builder sb;
 	sb_init(&sb);
 	dump(r, &sb);
+	cmlr_dispose(r);
 	ASSERT(strcmp(sb_get_str(&sb),
 		"Page{items:[header=Page{align:1size:20items:[logo=Image{align:2size:20url:'logo.gif'}"
 		"title=TextBox{content:[Span{text:'Title'style:TextStyle{parent:main_style=TextStyle{"
 		"family:'Arial'weight:400size:12color:0}size:24color:16436877}}]}]}mainText=TextBox{"
 		"content:[Span{text:'Hello 'style:=main_style}Span{text:'world!'style:bold=TextStyle{"
 		"weight:600parent:=main_style}}]}]}") == 0);
+
+	t = ":\n"
+		"   +\n"
+		"   3.14\n"
+		"   22\n"
+		"   \"\"\n"
+		"   point.p\n"
+		"   x 1\n"
+		"   y 2\n"
+		"\n"
+		"   +\n"
+		"   =p\n"
+		"   :\n"
+		"     +\n"
+		"     -\n";
+	r = cmlr_create(getc_asciiz, &t);
+	sb_clear(&sb);
+	dump(r, &sb);
 	cmlr_dispose(r);
+	ASSERT(strcmp(sb_get_str(&sb), "[true3.1422''p=point{x:1y:2}true=p[truefalse]]") == 0);
 	sb_dispose(&sb);
 }
 

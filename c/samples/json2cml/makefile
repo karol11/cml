@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-Wall -O3 -I../../src
+CCFLAGS=-Wall -O3 -I../../src -DCONFIG_LIBC_FLOATINGPOINT
 
 TARGET=json2cml
 SRCS=\

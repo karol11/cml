@@ -1,46 +1,70 @@
 <html>
+<body style="width:100%">
+<style>
+textarea{
+	width:45vw;
+	height:45vh;
+	padding: 4px;
+	margin: 4px;
+}
+</style>
+
+<h3>json->cml:</h3>
+<textarea id ="j2c_src" oninput="j2c();" ">
+{
+	"type":"polygon",
+	"points": [
+		{
+			"type":"point",
+			"x": 12,
+			"y": 44.5
+		},
+		{
+			"type":"point",
+			"x": 1,
+			"y": 2
+		}
+	]
+}
+</textarea><textarea id ="j2c_dst" readonly></textarea>
+<h3>cml->json:</h3>
+<textarea id ="c2j_src" oninput="c2j();">
+Polygon
+points:
+  Point
+  x 12
+  y 44.5
+
+  Point
+  x 1
+  y 2
+</textarea><textarea id ="c2j_dst" readonly></textarea>
 
 <script src="cml.js"></script>
 
 <script>
-	"use strict";
-	
-	var d =	{
-		"type":"polygon",
-		"pos": {
-			"type":"reg",
-			"visible": true,
-			"name": "asdf\"xz\\cv"
-		},
-		"points": [
-			{
-				"type":"point",
-				"x": 12,
-				"y": 44.5
-			},
-			{
-				"type":"point",
-				"x": 1,
-				"y": 2
-			}
-		],
-		"first": null
-	};
-	d.first = d.points[1];
-	alert(cml.write(d, "type"));
-	
-	
-/*	d = cml.read(
-		'Polygon\n'+
-		'points:\n'+
-		'  Point\n'+
-		'  x 12\n'+
-		'  y 44.5\n'+
-		'\n'+
-		'  Point\n'+
-		'  x 1\n'+
-		'  y 2\n');
-	alert(d); */
+function formatError(e) {
+	return e instanceof SyntaxError ? e.message + " at " + e.lineNumber + ":" + e.columnNumber : cml.stringify(e, "type");
+}
+
+function j2c() {
+	try{
+		j2c_dst.value =  cml.stringify(JSON.parse(j2c_src.value), "type");
+	} catch (err) {
+		j2c_dst.value = formatError(err);
+	}
+}
+function c2j() {
+	try{
+		c2j_dst.value =  JSON.stringify(cml.parse(c2j_src.value, "type"), undefined, 2);
+	} catch (err) {
+		c2j_dst.value =  formatError(err);
+	}
+}
+j2c();
+c2j();
 </script>
+
+</body>
 
 </html>
