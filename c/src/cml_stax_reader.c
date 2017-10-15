@@ -23,6 +23,7 @@ struct cml_stax_reader_tag {
 	string_builder type;
 	string_builder field;
 	long long int_val;
+	int size_val;
 	
 #ifdef CONFIG_LIBC_FLOATINGPOINT
 	double dbl_val;
@@ -236,6 +237,7 @@ void cmlr_dispose(cml_stax_reader *r) {
 }
 
 int cmlr_bool(cml_stax_reader *r) { return r->bool_val; }
+int cmlr_size(cml_stax_reader *r) { return r->size_val; }
 long long cmlr_int(cml_stax_reader *r) { return r->int_val; }
 const char *cmlr_str(cml_stax_reader *r) { return sb_get_str(&r->str); }
 const char *cmlr_type(cml_stax_reader *r) { return sb_get_str(&r->type); }
@@ -285,6 +287,7 @@ int cmlr_next(cml_stax_reader *r) {
 		result = CMLR_REF;
 	} else if (match(r, ':')) {
 		int array_indent = r->indent_pos;
+		r->size_val = is_digit(r->cur) ? (int)parse_int(r) : -1;
 		expected_new_line(r);
 		push_state(r, 1, r->indent_pos <= array_indent ? r->indent_pos + 1 : r->indent_pos);
 		result = CMLR_START_ARRAY;

@@ -19,7 +19,7 @@ enum cmlw_error_codes {
 int cmlw_int(cml_stax_writer *writer, const char *field, long long value);
 int cmlw_bool(cml_stax_writer *writer, const char *field, int value);
 int cmlw_str(cml_stax_writer *writer, const char *field, const char *value);
-int cmlw_array(cml_stax_writer *writer, const char *field);
+int cmlw_array(cml_stax_writer *writer, const char *field, int size);
 int cmlw_end_array(cml_stax_writer *writer, int prev_state);
 int cmlw_struct(cml_stax_writer *writer, const char *field, const char *type, const char *id);
 int cmlw_end_struct(cml_stax_writer *writer, int prev_state);

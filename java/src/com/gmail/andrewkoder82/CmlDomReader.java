@@ -41,7 +41,7 @@ public class CmlDomReader {
 			}
 		case CmlStaxReader.R_ARRAY_START:
 			{
-				ArrayList<Object> r = new ArrayList<Object>();
+				ArrayList<Object> r = new ArrayList<Object>(Math.max(stax.getSize(), 0));
 				for (;;) {
 					type = stax.next();
 					if (type == CmlStaxReader.R_ARRAY_END)

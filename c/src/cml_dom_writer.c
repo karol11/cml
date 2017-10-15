@@ -38,7 +38,7 @@ static int traverse(struct cml_stax_writer_data *d, d_var *v, const char *field)
 	case CMLD_ARRAY:
 		{
 			int i = -1, n = d_get_count(v);
-			int prev_state = cmlw_array(d->w, field);
+			int prev_state = cmlw_array(d->w, field, n);
 			if (prev_state < 0)
 				return prev_state;
 			while (++i < n) {

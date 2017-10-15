@@ -66,10 +66,8 @@ int cmlw_int(cml_stax_writer *w, const char *field, long long value) {
 	char buffer[21];
 	if (write_head(w, field))
 		return w->in_error;
-	sprintf(buffer,"%lld", value);
-	if (put_s(w, buffer))
-		return w->in_error;
-	return w->putc(w->putc_context, '\n') ? 0 : (w->in_error = CMLW_PUTC_ERROR);
+	sprintf(buffer,"%lld\n", value);
+	return put_s(w, buffer) ? w->in_error : 0;
 }
 
 int cmlw_bool(cml_stax_writer *w, const char *field, int value) {
@@ -110,14 +108,15 @@ int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 	return put_s(w, "\"\n");
 }
 
-int cmlw_array(cml_stax_writer *w, const char *field) {
+int cmlw_array(cml_stax_writer *w, const char *field, int size) {
+	char buffer[21];
 	int r = w->in_array;
 	if (write_head(w, field))
 		return w->in_error;
 	w->depth++;
 	w->in_array = 1;
 	w->array_just_started = 1;
-	return put_s(w, ":\n") ? w->in_error : r;
+	return put_s(w, size >= 0 ? sprintf(buffer,":%d\n", size), buffer : ":\n") ? w->in_error : r;
 }
 
 int cmlw_end_array(cml_stax_writer *w, int prev_state) {

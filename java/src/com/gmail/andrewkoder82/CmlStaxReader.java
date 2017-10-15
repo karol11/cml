@@ -42,6 +42,7 @@ public class CmlStaxReader {
 		}
 		if (match(':')) {
 			int arrayIndent = indentPos;
+			sizeVal = isDigit(cur) ? (int)parseInt() : -1;
 			expectedNewLine();
 			pushState(true, indentPos <= arrayIndent ? indentPos + 1 : indentPos);
 			return R_ARRAY_START;
@@ -131,6 +132,10 @@ public class CmlStaxReader {
 	public boolean getBoolVal() {
 		return boolVal;
 	}
+	
+	public int getSize() {
+		return sizeVal;
+	}
 
 	public void error(String message) {
 		throw new RuntimeException(message + " at " + lineNumber + ":" + charPos);		
@@ -149,6 +154,7 @@ public class CmlStaxReader {
 	
 	String field, type, strVal;
 	long longVal;
+	int sizeVal;
 	double dblVal;
 	boolean boolVal;
 	

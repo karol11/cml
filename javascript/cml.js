@@ -141,6 +141,8 @@ var cml = (function(){
 					return obj;
 				}
 				if (match(0x3a)) { // ':'
+					if (isDigit(cur))
+						parseInt();
 					var arrayIndent = indentPos;
 					expectedNewLine();
 					var r = [];
@@ -242,7 +244,7 @@ var cml = (function(){
 				} else if (t === "boolean") {
 					out +=  prefix + (v ? "+\n" : "-\n");					
 				} else if (Array.isArray(v)) {
-					out += prefix + ":\n";
+					out += prefix + ":" + v.length + "\n";
 					indent += " ";
 					for (var i = 0; i < v.length; i++)
 						writeNode(v[i], indent, indent, i < v.length - 1);

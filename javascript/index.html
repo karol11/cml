@@ -49,7 +49,7 @@ function formatError(e) {
 
 function j2c() {
 	try{
-		j2c_dst.value =  cml.stringify(JSON.parse(j2c_src.value), "type");
+		j2c_dst.value = cml.stringify(JSON.parse(j2c_src.value), "type");
 	} catch (err) {
 		j2c_dst.value = formatError(err);
 	}

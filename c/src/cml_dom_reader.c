@@ -42,7 +42,15 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 		}
 		break;
 	case CMLR_START_ARRAY:
-		d_set_array(v, d, 0);
+		{
+			int s = cmlr_size(r);
+			if (s < 0)
+				d_set_array(v, d,  0);
+			else {
+				d_set_array(v, d,  s);
+				d_delete(v, d, 0, s);				
+			}
+		}
 		for (;;) {
 			type = cmlr_next(r);
 			if (type == CMLR_END_ARRAY)
