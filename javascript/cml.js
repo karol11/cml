@@ -33,7 +33,7 @@ var cml = (function(){
 			function skipWs() {
 				while (cur == 0x20 || cur == 0x09) 
 					nextChar();
-				if (cur == 0x23) {//#
+				if (cur == 0x3b) {//;
 					while (!atEoln() && cur > 0)
 						nextChar();
 				}
@@ -127,11 +127,28 @@ var cml = (function(){
 				error("unexpected hexadecimal char " + String.fromCharCode(cur));
 				return 0;
 			}
+			function char2code(termIndent) {
+				while (pos < data.length) {
+					var c = data.charCodeAt(pos++);
+					if (c >= 0x41 && c <= 0x5a) return c - 0x41; // A-Z
+					if (c >= 0x61 && c <= 0x7a) return c - 0x61 + 26; // a-z
+					if (c >= 0x30 && c <= 0x39) return c - 0x30 + 52; // 0-9
+					if (c == 0x2b) return 62;//+
+					if (c == 0x2f) return 63;///
+					if (c == 0x0a || c == 0x0d) {
+						expectedNewLine();
+						if (indentPos <= termIndent)
+							return -1;
+					}
+					if (c < 0x20 || c == 0x3d) { cur = c; return -1; } //=
+				}
+				return -1;
+			}
 			function parseNode(inArray) {
 				if (match(0x3d)) { //'='
 					var id = getId("object id");
 					expectedNewLine();
-					if (id === '$')
+					if (id === '_')
 						return null;
 					var obj = names.get(id);
 					if (!obj)
@@ -151,6 +168,25 @@ var cml = (function(){
 						while (atEoln())
 							expectedNewLine();
 					}
+					return r;
+				}
+				if (match(0x23)) { //#
+					var size = parseInt();
+					var r = new ArrayBuffer(size);
+					var arr = new Uint8Array(r);
+					var arrayIndent = indentPos;
+					expectedNewLine();
+					for (var dst = 0;;) {
+						var a = 0, b = 0;
+						if ((a = char2code(arrayIndent)) < 0 || (b = char2code(arrayIndent)) < 0) break;
+						arr[dst++] = a << 2 | b >> 4;
+						if ((a = char2code(arrayIndent)) < 0) break;
+						arr[dst++] = b << 4 | a >> 2;
+						if ((b = char2code(arrayIndent)) < 0) break;
+						arr[dst++] = a << 6 | b;
+					}
+					while (match(0x3d)) {} //=
+						expectedNewLine();
 					return r;
 				}
 				if (match(0x22)) { //'"'
@@ -235,6 +271,13 @@ var cml = (function(){
 				var n = revNames.get(v);
 				return n === undefined && id != 0 ? '$' + Math.abs(id) : n;
 			}
+			function code2char(c) {
+				c &= 0x3f;
+				if (c < 26) return String.fromCharCode(0x41 + c);
+				if (c < 52) return String.fromCharCode(0x61 + c - 26);
+				if (c < 62) return String.fromCharCode(0x30 + c - 52);
+				return c == 62 ? '+' : '/';
+			}
 			function writeNode(v, indent, prefix, atMidArray) {
 				var t = typeof v;
 				if (t === 'number') {
@@ -248,6 +291,34 @@ var cml = (function(){
 					indent += " ";
 					for (var i = 0; i < v.length; i++)
 						writeNode(v[i], indent, indent, i < v.length - 1);
+				} else if (v instanceof ArrayBuffer) {
+					out += prefix + "#" + v.length + " ";
+					var arr = new Uint8Array(r);
+					var src = 0;
+					var srcSize = arr.length;
+					for (; srcSize >= 3; srcSize -= 3) {
+						var a = arr[src++];
+						var b = arr[src++];
+						var c = arr[src++];
+						out += code2char(a >> 2);
+						out += code2char(a << 4 | b >> 4);
+						out += code2char(b << 2 | c >> 6);
+						out += code2char(c);
+					}
+					if (srcSize != 0) {
+						var a = arr[src++];
+						out += code2char(a >> 2);
+						if (srcSize == 1) {
+							out += code2char(a << 4);
+							out += '=';
+						} else {
+							var b = arr[src++];
+							out += code2char(a << 4 | b >> 4);
+							out += code2char(b << 2);
+						}
+						out += '=';
+					}
+					out += '\n';
 				} else if (t === "object") {
 					var id = visited.get(v);
 					if (id < 0)

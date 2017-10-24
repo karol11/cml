@@ -16,12 +16,12 @@ import java.util.Set;
  
  CML document elements can be:
  - String, Boolean, Float, Double, Integer and Long terminal objects
+ - byte[] - raw binary data
  - List<Of elements>
  - Dom.Struct-s having:
       - type
       - optional name
       - and map of fields storing elements.
- Dom.Struct fields and List items can reference any Dom.Struct instances.
  The DOM needs not to have a tree-like structure.
  It can have diamond-like topology or even have cycles.
  Each Dom.Struct have associated Dom.StructType object, that lists:
@@ -61,7 +61,7 @@ public class Dom {
 	/**
 	 * R/W access to DOM's root object
 	 */
-	public Object root; // can contain: Integer, Long, String, List<Object>, Dom.Struct
+	public Object root;
 	
 	/**
 	 * Returns Dom.StructType by name. If none, returns null.

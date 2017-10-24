@@ -151,6 +151,9 @@ public class DomQuery implements Iterable<DomQuery> {
 			return (String) target;
 		return defVal;		
 	}
+	public byte[] asRaw(byte[] defVal) {
+		return target instanceof byte[] ? (byte[]) target : defVal;		
+	}
 	public boolean asBool(boolean defVal) {
 		if (target instanceof Integer)
 			return (int) target != 0;

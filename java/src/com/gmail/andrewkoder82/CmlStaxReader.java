@@ -1,5 +1,6 @@
 package com.gmail.andrewkoder82;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class CmlStaxReader {
 	static public final int R_ARRAY_END = 6;
 	static public final int R_BOOL = 7;
 	static public final int R_DOUBLE = 8;
+	static public final int R_BINARY = 9;
 	static public final int R_EOF = 9;
 	
 	public CmlStaxReader(Reader in) throws IOException {
@@ -46,6 +48,22 @@ public class CmlStaxReader {
 			expectedNewLine();
 			pushState(true, indentPos <= arrayIndent ? indentPos + 1 : indentPos);
 			return R_ARRAY_START;
+		}
+		if (match('#')) {
+			int arrayIndent = indentPos;
+			ByteArrayOutputStream r = new ByteArrayOutputStream((int)parseInt());
+			expectedNewLine();
+			for (;;) {
+				int a, b;
+				if ((a = base64char2code(arrayIndent)) < 0 || (b = base64char2code(arrayIndent)) < 0) break;
+				r.write(a << 2 | b >> 4);
+				if ((a = base64char2code(arrayIndent)) < 0) break;
+				r.write(b << 4 | a >> 2);
+				if ((b = base64char2code(arrayIndent)) < 0) break;
+				r.write(a << 6 | b);
+			}
+			binVal = r.toByteArray();
+			return R_BINARY;
 		}
 		if (match('"')) {
 			StringBuilder r = new StringBuilder();
@@ -136,6 +154,9 @@ public class CmlStaxReader {
 	public int getSize() {
 		return sizeVal;
 	}
+	public byte[] getBinary() {
+		return binVal;
+	}
 
 	public void error(String message) {
 		throw new RuntimeException(message + " at " + lineNumber + ":" + charPos);		
@@ -157,6 +178,7 @@ public class CmlStaxReader {
 	int sizeVal;
 	double dblVal;
 	boolean boolVal;
+	byte[] binVal;
 	
 	void pushState(boolean newInArray, int newIndent) {
 		states.add(curStateIndent << 1 | (inArray ? 1 : 0));
@@ -199,7 +221,7 @@ public class CmlStaxReader {
 	void skipWs() throws IOException {
 		while (cur == ' ' || cur == '\t') 
 			nextChar();
-		if (cur == '#') {
+		if (cur == ';') {
 			while (!atEoln())
 				nextChar();
 		}
@@ -269,5 +291,21 @@ public class CmlStaxReader {
 		}
 		longVal = r * sign;
 		return R_LONG;
+	}
+	int base64char2code(int basePos) throws IOException {
+		for (;;) {
+			int c = nextChar();
+			if (c >= 'A' && c <= 'Z') return c - 'A';
+			if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+			if (c >= '0' && c <= '9') return c - '0' + 52;
+			if (c == '+') return 62;
+			if (c == '/') return 63;
+			if (c == '\n' || c == '\r') {
+				expectedNewLine();
+				if (indentPos <= basePos)
+					return -1;
+			}
+			if (c <= 0 || c == '=') return -1;
+		}
 	}
 }

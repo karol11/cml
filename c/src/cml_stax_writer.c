@@ -23,22 +23,31 @@ static int put_s(cml_stax_writer *w, const char *s) {
 	return 0;
 }
 
-static int write_head(cml_stax_writer *w, const char *field) {
-	int i = w->depth + 1;
+static int put_c(cml_stax_writer *w, char c) {
+	return
+		w->in_error ? w->in_error = CMLW_WRITE_AFTER_ERROR :
+		w->putc(w->putc_context, c) ? 0 : (w->in_error = CMLW_PUTC_ERROR);
+}
+
+static int write_indent(cml_stax_writer *w, int i) {
 	if (w->in_error)
-		return CMLW_WRITE_AFTER_ERROR;
-	w->array_just_started = 0;
+		return w->in_error = CMLW_WRITE_AFTER_ERROR;
 	while (--i) {
 		if (!w->putc(w->putc_context, '\t'))
 			return w->in_error = CMLW_PUTC_ERROR;
 	}
+	return 0;
+}
+
+static int write_head(cml_stax_writer *w, const char *field) {
+	if (write_indent(w, w->depth + 1))
+		return w->in_error;
+	w->array_just_started = 0;
 	if (w->in_array != !field)
 		return w->in_error = CMLW_UNEXPECTED_FIELD;
 	if (field) {
-		if (put_s(w, field))
-			return w->in_error = CMLW_PUTC_ERROR;
-		if (!w->putc(w->putc_context, ' '))
-			return w->in_error = CMLW_PUTC_ERROR;
+		if (put_s(w, field) || put_c(w, ' '))
+			return w->in_error;
 	}
 	return 0;
 }
@@ -64,24 +73,24 @@ void cmlw_dispose(cml_stax_writer *w) {
 
 int cmlw_int(cml_stax_writer *w, const char *field, long long value) {
 	char buffer[21];
-	if (write_head(w, field))
-		return w->in_error;
 	sprintf(buffer,"%lld\n", value);
-	return put_s(w, buffer) ? w->in_error : 0;
+	if (!write_head(w, field))
+		put_s(w, buffer);
+	return w->in_error;
 }
 
 int cmlw_bool(cml_stax_writer *w, const char *field, int value) {
-	if (write_head(w, field))
-		return w->in_error;
-	return put_s(w, value ? "+\n" : "-\n") ? w->in_error : 0;
+	if (!write_head(w, field))
+		put_s(w, value ? "+\n" : "-\n");
+	return w->in_error;
 }
 
 int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 	int r = write_head(w, field);
-	if (r < 0)
+	if (r)
 		return r;
-	if (!w->putc(w->putc_context, '\"'))
-		return w->in_error = CMLW_PUTC_ERROR;
+	if (put_c(w, '\"'))
+		return w->in_error;
 	for (;;) {
 		unsigned int c = get_utf8(get_c, (void*)&s);
 		if (c == 0)
@@ -116,7 +125,8 @@ int cmlw_array(cml_stax_writer *w, const char *field, int size) {
 	w->depth++;
 	w->in_array = 1;
 	w->array_just_started = 1;
-	return put_s(w, size >= 0 ? sprintf(buffer,":%d\n", size), buffer : ":\n") ? w->in_error : r;
+	put_s(w, size >= 0 ? sprintf(buffer,":%d\n", size), buffer : ":\n");
+	return w->in_error;
 }
 
 int cmlw_end_array(cml_stax_writer *w, int prev_state) {
@@ -127,16 +137,17 @@ int cmlw_end_array(cml_stax_writer *w, int prev_state) {
 
 int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const char *id) {
 	int r = w->in_array;
-	if (w->in_array && !w->array_just_started && !w->putc(w->putc_context, '\n'))
-		return w->in_error = CMLW_PUTC_ERROR;
+	if (w->in_array && !w->array_just_started && put_c(w, '\n'))
+		return w->in_error;
 	if (write_head(w, field) || put_s(w, type))
 		return w->in_error;
-	if (id && (!w->putc(w->putc_context, '.') || put_s(w, id)))
-		return w->in_error = CMLW_PUTC_ERROR;
+	if (id && (put_c(w, '.') || put_s(w, id)))
+		return w->in_error;
 	if (!w->in_array)
 		w->depth++;
 	w->in_array = 0;
-	return w->putc(w->putc_context, '\n') ? r : (w->in_error = CMLW_PUTC_ERROR);
+	put_c(w, '\n');
+	return w->in_error;
 }
 
 int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
@@ -150,12 +161,56 @@ int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
 }
 
 int cmlw_ref(cml_stax_writer *w, const char *field, const char *id) {
-	if (write_head(w, field))
+	if (write_head(w, field) || put_c(w, '=') || put_s(w, id))
+		put_c(w, '\n');
+	return w->in_error;
+}
+
+static int base64code2char(int c) {
+	c &= 0x3f;
+	if (c < 26) return 'A' + c;
+	if (c < 52) return 'a' + c - 26;
+	if (c < 62) return '0' + c - 52;
+	return c == 62 ? '+' : '/';
+}
+
+int cmlw_bin(cml_stax_writer *w, const char *field, const char *data, int data_size) {
+	char temp[21];
+	int per_row = 1;
+	sprintf(temp,"#%d", data_size);
+	if (write_head(w, field) || put_s(w, temp))
 		return w->in_error;
-	return
-		w->putc(w->putc_context, '=') &&
-		!put_s(w, id) &&
-		w->putc(w->putc_context, '\n') ? 0 : (w->in_error = CMLW_PUTC_ERROR);
+	for (; data_size >= 3; data_size -= 3, data += 3) {
+		int a = data[0];
+		int b = data[1];
+		int c = data[2];
+		if (--per_row == 0) {
+			per_row = 64;
+			if (put_c(w, '\n') || write_indent(w, w->depth + 2))
+				return w->in_error;
+		}
+		if (put_c(w, base64code2char(a >> 2)) ||
+			put_c(w, base64code2char(a << 4 | b >> 4)) ||
+			put_c(w, base64code2char(b << 2 | c >> 6)) ||
+			put_c(w, base64code2char(c)))
+			return w->in_error;
+	}
+	if (data_size != 0) {
+		int a = *data;
+		if (put_c(w, base64code2char(a >> 2)))
+			return w->in_error;
+		if (data_size == 1) {
+			if (put_c(w, base64code2char(a << 4)) || put_c(w, '='))
+				return w->in_error;
+		} else {
+			int b = data[1];
+			if (put_c(w, base64code2char(a << 4 | b >> 4)) || put_c(w, base64code2char(b << 2)))
+				return w->in_error;
+		}
+		put_c(w, '=');
+	}
+	put_c(w, '\n');
+	return w->in_error;
 }
 
 #ifdef CONFIG_LIBC_FLOATINGPOINT

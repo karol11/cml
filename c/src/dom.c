@@ -14,6 +14,10 @@ struct d_var_tag {
 		const char *str_val;
 		d_struct *struct_val;
 		d_array *array_val;
+		struct{
+			char *bin_val;
+			int bin_size;
+		};
 #ifdef CONFIG_LIBC_FLOATINGPOINT
 		double dbl_val;
 #endif
@@ -250,6 +254,24 @@ d_str *d_as_str_ref(d_var *v) {
 	return v && v->type == CMLD_STR ? (d_str*) v->str_val : 0;
 }
 
+char *d_as_binary(d_var *v, int *out_size) {
+	if (!v || v->type != CMLD_BINARY)
+		return 0;
+	if (out_size)
+		*out_size = v->bin_size;
+	return v->bin_val;
+}
+
+void d_set_binary(d_var *dst, d_dom *dom, char *data, int size) {
+	if (dst) {
+		dst->type = CMLD_BINARY;
+		dst->bin_size = size;
+		dst->bin_val = d_alloc(dom, size);
+		if (data)
+			memcpy(dst->bin_val, data, size);
+	}
+}
+
 void d_set_int(d_var *dst, long long val) {
 	if (dst) {
 		dst->type = CMLD_INT;
@@ -423,6 +445,9 @@ static void mark(d_var *i) {
 	switch (i->type) {
 	case CMLD_STR:
 		gc_visited((void*) i->str_val);
+		break;
+	case CMLD_BINARY:
+		gc_visited((void*) i->bin_val);
 		break;
 	case CMLD_ARRAY:
 		if (!gc_visited(i->array_val)) {

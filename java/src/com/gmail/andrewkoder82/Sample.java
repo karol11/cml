@@ -27,7 +27,9 @@ public class Sample {
 				"  x 1\n"+
 				"  y 42\n"+
 				"ordered:\n"+
-				"  =p1"));
+				"  =p1\n"+
+				"bin#\n"+
+				"  BB==\n"));
 
 		StringBuilder json = new StringBuilder();
 		boolean neededComma = false;

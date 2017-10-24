@@ -31,7 +31,7 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 		}
 		break;
 	case CMLR_REF:
-		if (strcmp(cmlr_id(r), "$") == 0) 
+		if (strcmp(cmlr_id(r), "_") == 0) 
 			d_set_ref(v, 0);
 		else {
 			d_struct *id = d_get_named(d, cmlr_id(r));
@@ -58,6 +58,10 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 			if ((result = parse_var(d_at(v, d_insert(v, d, d_get_count(v), 1)), d, r, type)))
 				return result;
 		}
+		break;
+	case CMLR_BINARY:
+		d_set_binary(v, d, 0, cmlr_size(r));
+		cmlr_binary(r, d_as_binary(v, 0));
 		break;
 	case CMLR_EOF: break;
 	default:

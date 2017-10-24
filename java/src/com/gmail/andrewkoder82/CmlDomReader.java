@@ -29,12 +29,13 @@ public class CmlDomReader {
 		case CmlStaxReader.R_STRING: return stax.getStrVal();
 		case CmlStaxReader.R_BOOL: return stax.getBoolVal();
 		case CmlStaxReader.R_DOUBLE: return stax.getDblVal();
+		case CmlStaxReader.R_BINARY: return stax.getBinary();
 		case CmlStaxReader.R_REF: 
 			{
 				String id = stax.getId(); 
-				if (id.equals("$"))
+				if (id.equals("_"))
 					return null;
-				Object r = id.startsWith("$") ? named.get(id) : dom.getNamed(id);
+				Object r = id.startsWith("_") ? named.get(id) : dom.getNamed(id);
 				if (r == null)
 					stax.error("unresolved name " + id);
 				return r;				
@@ -55,7 +56,7 @@ public class CmlDomReader {
 				Dom.Struct r = new Dom.Struct(dom.getOrCreateStruct(stax.getType()));
 				String id = stax.getId();
 				if (id != null) {
-					if (id.startsWith("$"))
+					if (id.startsWith("_"))
 						named.put(id,  r);
 					else
 						dom.setName(id, r);

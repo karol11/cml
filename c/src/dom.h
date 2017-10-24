@@ -125,6 +125,7 @@ enum d_kinds {
 	CMLD_STRUCT,
 	CMLD_ARRAY,
 	CMLD_DOUBLE,
+	CMLD_BINARY,
 };
 
 //
@@ -186,6 +187,9 @@ static const char *d_as_str(d_var *src, const char *def_val) {
 	return r ? (const char*) r : def_val;
 }
 
+char *d_as_binary(d_var *src, int *out_size);
+void d_set_binary(d_var *dst, d_dom *dom, char *data, int size);
+
 //
 // --------------- Data Manipulation Routines for Arrays ----------
 //
@@ -225,6 +229,7 @@ int d_insert(d_var *array, d_dom *dom, int at, int count);
 // 'at' and 'at+count' indexes should be in the range of array indexes.
 //
 void d_delete(d_var *array, d_dom *dom, int at, int count);
+
 
 //
 // --------------- Data Manipulation Routines for Structures ----------

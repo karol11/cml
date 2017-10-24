@@ -62,7 +62,7 @@ static int skip_ws(cml_stax_reader *r) {
 	int c = r->cur;
 	while (c == ' ' || c == '\t') 
 		c = next_char(r);
-	if (c == '#') {
+	if (c == ';') {
 		while (c != '\n' && c != '\r' && c)
 			c = next_char(r);
 	}
@@ -336,6 +336,9 @@ int cmlr_next(cml_stax_reader *r) {
 			r->bool_val = 0;
 			result = r->error ? CMLR_ERROR : CMLR_BOOL;
 		}
+	} else if (match(r, '#')) {
+		r->size_val = (int) parse_int(r);
+		result = r->error ? CMLR_ERROR : CMLR_BINARY;
 	} else {
 		get_id(r, &r->type, "expected type id");
 		if (match(r, '.'))
@@ -355,6 +358,45 @@ int cmlr_next(cml_stax_reader *r) {
 	return r->error ? CMLR_ERROR : result;
 }
 
+static int char2code(cml_stax_reader *r, int term_indent) {
+	for (;;) {
+		char c;
+		skip_ws(r);
+		c = r->cur;
+		next_char(r);
+		if (c >= 'A' && c <= 'Z') return c - 'A';
+		if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+		if (c >= '0' && c <= '9') return c - '0' + 52;
+		if (c == '+') return 62;
+		if (c == '/') return 63;
+		if (c == '\n' || c == '\r') {
+			expected_new_line(r);
+			if (r->indent_pos <= term_indent)
+				return -1;
+		}
+		if (!c || c == '=') return -1;
+	}
+}
+
+int cmlr_binary(cml_stax_reader *r, char *dst) {
+	int size = r->size_val;
+	int indent = r->indent_pos;
+	for (;;) {
+		int a,b;
+		if ((a = char2code(r, indent)) < 0 || (b = char2code(r, indent)) < 0) break;
+		if (--size == 0){ --size; break; }
+		*dst++ = a << 2 | b >> 4;
+		if ((a = char2code(r, indent)) < 0) break;
+		if (--size == 0){ --size; break; }
+		*dst++ = b << 4 | a >> 2;
+		if ((b = char2code(r, indent)) < 0) break;
+		if (--size == 0){ --size; break; }
+		*dst++ = a << 6 | b;
+	}
+	if (size != 0)
+		error(r, "base64 size mismatch");
+	return size != 0;
+}
 
 #ifdef CONFIG_LIBC_FLOATINGPOINT
 

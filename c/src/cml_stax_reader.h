@@ -25,6 +25,7 @@ enum cml_reader_states {
 	CMLR_EOF,
 	CMLR_ERROR,
 	CMLR_DOUBLE,
+	CMLR_BINARY,
 };
 
 int cmlr_next(cml_stax_reader *);
@@ -32,6 +33,7 @@ int cmlr_next(cml_stax_reader *);
 int cmlr_bool(cml_stax_reader *);
 int cmlr_size(cml_stax_reader *);
 long long cmlr_int(cml_stax_reader *);
+int cmlr_binary(cml_stax_reader *, char *dst);
 const char *cmlr_str(cml_stax_reader *);
 const char *cmlr_type(cml_stax_reader *);
 const char *cmlr_id(cml_stax_reader *);

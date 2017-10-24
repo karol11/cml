@@ -70,7 +70,54 @@ public class CmlStaxWriter {
 	}
 	public void writeRef(String field, String id) throws IOException {
 		addPrefix(field);
-		out.append('=').append(id).append('\n');
+		out.append('=').append(id == null ? "_" : id).append('\n');
+	}
+	
+	private char code2char(int c) {
+		c &= 0x3f;
+		if (c < 26) return (char)('A' + c);
+		if (c < 52) return (char)('a' + c - 26);
+		if (c < 62) return (char)('0' + c - 52);
+		return c == 62 ? '+' : '/';
+	}
+	
+	public void writeBin(String field, byte[] val) throws IOException {
+		writeBin(field, val, 0, val.length);
+	}
+	
+	public void writeBin(String field, byte[] val, int at, int length) throws IOException {
+		out.append('#').append(Integer.toString(length));
+		int perRow = 1;
+		for (; length >= 3; length -= 3, at += 3) {
+			if (--perRow == 0) {
+				out.append('\n').append(indent).append('\t');
+				perRow = 64;
+			}
+			int a = val[at];
+			int b = val[at + 1];
+			int c = val[at + 2];
+			out
+				.append(code2char(a >> 2))
+				.append(code2char(a << 4 | b >> 4))
+				.append(code2char(b << 2 | c >> 6))
+				.append(code2char(c));
+		}
+		if (length != 0) {
+			int a = val[at];
+			out.append(code2char(a >> 2));
+			if (length == 1) {
+				out
+					.append(code2char(a << 4))
+					.append('=');
+			} else {
+				int b = val[at + 1];
+				out
+					.append(code2char(a << 4 | b >> 4))
+					.append(code2char(b << 2));
+			}
+			out.append('=');
+		}
+		out.append('\n');
 	}
 	
 	private void pushState(boolean newInArray) {
