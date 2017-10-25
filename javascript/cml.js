@@ -185,8 +185,9 @@ var cml = (function(){
 						if ((b = char2code(arrayIndent)) < 0) break;
 						arr[dst++] = a << 6 | b;
 					}
-					while (match(0x3d)) {} //=
-						expectedNewLine();
+					while (match(0x3d)){
+					} //=
+					expectedNewLine();
 					return r;
 				}
 				if (match(0x22)) { //'"'

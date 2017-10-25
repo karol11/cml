@@ -30,6 +30,19 @@ static void dump(cml_stax_reader *r, string_builder *s) {
 			sb_puts(s, cmlr_str(r));
 			sb_append(s, '\'');
 			break;
+		case CMLR_BINARY:
+			{
+				int i;
+				int size = cmlr_size(r);
+				char *buf = (char*)malloc(size);
+				cmlr_binary(r, buf);
+				for (i = 0; i < size; i++) {
+					sprintf(itoa_buf, "%02x", buf[i] & 0xff);
+					sb_puts(s, itoa_buf);
+				}
+				free(buf);
+			}
+			break;
 		case CMLR_START_STRUCT:
 			if (*cmlr_id(r)){
 				sb_puts(s, cmlr_id(r));
@@ -56,14 +69,25 @@ static void dump(cml_stax_reader *r, string_builder *s) {
 		}
 	}
 }
+
+static void test(char *cml, char *expected_dump) {
+	cml_stax_reader *r = cmlr_create(getc_asciiz, &cml);
+	string_builder sb;
+	sb_init(&sb);
+	dump(r, &sb);
+	cmlr_dispose(r);
+	ASSERT(strcmp(sb_get_str(&sb), expected_dump) == 0);
+	sb_dispose(&sb);
+}
+
 void cml_stax_reader_test() {
-	char *t =
+	test(
 		"Page\n"
 		"items:\n"
-		"	Page.header #comment\n"
-		"	align 1 # comment\n"
+		"	Page.header ;comment\n"
+		"	align 1 ; comment\n"
 		"	size 20\n"
-		"	items: #comment\n"
+		"	items: ;comment\n"
 		"		Image.logo\n"
 		"		align 2\n"
 		"		size 20\n"
@@ -92,20 +116,16 @@ void cml_stax_reader_test() {
 		"		text \"world!\"\n"
 		"		style TextStyle.bold\n"
 		"			weight 600\n"
-		"			parent=main_style\n";
-	cml_stax_reader *r = cmlr_create(getc_asciiz, &t);
-	string_builder sb;
-	sb_init(&sb);
-	dump(r, &sb);
-	cmlr_dispose(r);
-	ASSERT(strcmp(sb_get_str(&sb),
+		"			parent=main_style\n",
+		
 		"Page{items:[header=Page{align:1size:20items:[logo=Image{align:2size:20url:'logo.gif'}"
 		"title=TextBox{content:[Span{text:'Title'style:TextStyle{parent:main_style=TextStyle{"
 		"family:'Arial'weight:400size:12color:0}size:24color:16436877}}]}]}mainText=TextBox{"
 		"content:[Span{text:'Hello 'style:=main_style}Span{text:'world!'style:bold=TextStyle{"
-		"weight:600parent:=main_style}}]}]}") == 0);
+		"weight:600parent:=main_style}}]}]}");
 
-	t = ":\n"
+	test(
+		":\n"
 		"   +\n"
 		"   3.14\n"
 		"   22\n"
@@ -118,13 +138,14 @@ void cml_stax_reader_test() {
 		"   =p\n"
 		"   :\n"
 		"     +\n"
-		"     -\n";
-	r = cmlr_create(getc_asciiz, &t);
-	sb_clear(&sb);
-	dump(r, &sb);
-	cmlr_dispose(r);
-	ASSERT(strcmp(sb_get_str(&sb), "[true3.1422''p=point{x:1y:2}true=p[truefalse]]") == 0);
-	sb_dispose(&sb);
+		"     -\n",
+		"[true3.1422''p=point{x:1y:2}true=p[truefalse]]");
+
+	test(
+		"#4\n"
+		" /8AMq\n"
+		" g==",
+		"ffc00caa");
 }
 
 #endif

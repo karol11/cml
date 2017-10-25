@@ -338,6 +338,7 @@ int cmlr_next(cml_stax_reader *r) {
 		}
 	} else if (match(r, '#')) {
 		r->size_val = (int) parse_int(r);
+		expected_new_line(r);
 		result = r->error ? CMLR_ERROR : CMLR_BINARY;
 	} else {
 		get_id(r, &r->type, "expected type id");
@@ -360,20 +361,19 @@ int cmlr_next(cml_stax_reader *r) {
 
 static int char2code(cml_stax_reader *r, int term_indent) {
 	for (;;) {
-		char c;
-		skip_ws(r);
-		c = r->cur;
+		char c = skip_ws(r);
+		if (c == '\n' || c == '\r') {
+			expected_new_line(r);
+			if (r->indent_pos < term_indent)
+				return -1;
+			continue;
+		}
 		next_char(r);
 		if (c >= 'A' && c <= 'Z') return c - 'A';
 		if (c >= 'a' && c <= 'z') return c - 'a' + 26;
 		if (c >= '0' && c <= '9') return c - '0' + 52;
 		if (c == '+') return 62;
 		if (c == '/') return 63;
-		if (c == '\n' || c == '\r') {
-			expected_new_line(r);
-			if (r->indent_pos <= term_indent)
-				return -1;
-		}
 		if (!c || c == '=') return -1;
 	}
 }
@@ -384,18 +384,20 @@ int cmlr_binary(cml_stax_reader *r, char *dst) {
 	for (;;) {
 		int a,b;
 		if ((a = char2code(r, indent)) < 0 || (b = char2code(r, indent)) < 0) break;
-		if (--size == 0){ --size; break; }
+		if (--size < 0) break;
 		*dst++ = a << 2 | b >> 4;
 		if ((a = char2code(r, indent)) < 0) break;
-		if (--size == 0){ --size; break; }
+		if (--size < 0) break;
 		*dst++ = b << 4 | a >> 2;
 		if ((b = char2code(r, indent)) < 0) break;
-		if (--size == 0){ --size; break; }
+		if (--size < 0) break;
 		*dst++ = a << 6 | b;
 	}
 	if (size != 0)
 		error(r, "base64 size mismatch");
-	return size != 0;
+	while (match(r, '=')){}
+	expected_new_line(r);
+	return !r->error;
 }
 
 #ifdef CONFIG_LIBC_FLOATINGPOINT
