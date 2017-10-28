@@ -64,6 +64,8 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 		cmlr_binary(r, d_as_binary(v, 0));
 		break;
 	case CMLR_EOF: break;
+	case CMLR_ERROR:
+		return "parsing error";
 	default:
 		return "unexpected node";
 	}
@@ -77,10 +79,10 @@ d_dom *cml_read(
 	void *on_error_context)
 {
 	d_dom *d = d_alloc_dom();
-	const char *err;
 	cml_stax_reader *r = cmlr_create(getc, getc_context);
-	if ((err = parse_var(d_root(d), d, r, cmlr_next(r)))) {
-		if (*cmlr_error(r))
+	const char *err = parse_var(d_root(d), d, r, cmlr_next(r));
+	if (err) {
+		if (cmlr_error(r))
 			err = cmlr_error(r);
 		if (on_error)
 			on_error(on_error_context, err, cmlr_line_num(r), cmlr_char_pos(r));

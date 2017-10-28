@@ -249,31 +249,38 @@ int cmlr_char_pos(cml_stax_reader *r) { return r->char_pos; }
 
 int cmlr_next(cml_stax_reader *r) {
 	int result;
-	int empty_line = r->cur == '\n' || r->cur == '\r';
+	int empty_line;
+	while (r->cur == ';') {
+		skip_ws(r);
+		expected_new_line(r);
+	}
+	empty_line = r->cur == '\n' || r->cur == '\r';
 	if (r->error)
 		return CMLR_ERROR;
 	if (empty_line) {
-		do
+		cml_stax_state *s;
+		do {
 			expected_new_line(r);
-		while (r->cur == '\n' || r->cur == '\r');
+			skip_ws(r);
+		} while (r->cur == '\n' || r->cur == '\r');
+		for (s = r->prev; s && s->indent >= r->indent_pos; s = s->prev) {
+			if (s->indent == r->indent_pos && !s->in_array) {
+				s->indent++;
+				break;
+			}
+		}
 	}
 	if (r->indent_pos < r->cur_state_indent || r->cur <= 0 || empty_line) {
 		int was_in_array = r->in_array;
 		sb_clear(&r->field);
 		if (!r->prev)
-			return CMLR_EOF;
+			return r->cur <= 0 ? CMLR_EOF : error(r, "text after eof");
 		{
 			cml_stax_state *s = r->prev;
 			r->in_array = s->in_array;
 			r->cur_state_indent = s->indent;
 			r->prev = s->prev;
 			free(s);
-			for (s = r->prev; s && s->indent >= r->indent_pos; s = s->prev) {
-				if (s->indent == r->indent_pos && !s->in_array) {
-					s->indent++;
-					break;
-				}
-			}
 		}
 		return was_in_array ? CMLR_END_ARRAY : CMLR_END_STRUCT;
 	}
@@ -337,6 +344,7 @@ int cmlr_next(cml_stax_reader *r) {
 			result = r->error ? CMLR_ERROR : CMLR_BOOL;
 		}
 	} else if (match(r, '#')) {
+		skip_ws(r);
 		r->size_val = (int) parse_int(r);
 		expected_new_line(r);
 		result = r->error ? CMLR_ERROR : CMLR_BINARY;
@@ -395,8 +403,10 @@ int cmlr_binary(cml_stax_reader *r, char *dst) {
 	}
 	if (size != 0)
 		error(r, "base64 size mismatch");
-	while (match(r, '=')){}
-	expected_new_line(r);
+	if (r->indent_pos == indent) {
+		while (match(r, '=')){}
+		expected_new_line(r);
+	}
 	return !r->error;
 }
 

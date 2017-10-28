@@ -330,7 +330,8 @@ static size_t d_get_tag(d_var *struc) {
 //
 // Remove all tags tracing DOM starting at given d_var.
 //
-void d_untag(d_struct *root);
+void d_untag(d_var *v);
+void d_untag_ref(d_struct *s);
 
 //
 // --------------------------- Name Manipulation Routines -----------------

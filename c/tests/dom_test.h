@@ -36,6 +36,17 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 		sb_puts(r, d_as_str(v, ""));
 		sb_append(r, '"');		
 		break;
+	case CMLD_BINARY:
+		{
+			int size;
+			char buf[32];
+			char *d = d_as_binary(v, &size);
+			for (++size; --size; d++) {
+				sprintf(buf, "%02x", *d & 0xff);
+				sb_puts(r, buf);
+			}
+		}
+		break;
 	case CMLD_ARRAY:
 		{
 			int i = -1, n = d_get_count(v);
@@ -101,6 +112,18 @@ void dom_test() {
 		d_gc(d, 0, 0, 0, 0);
 		to_string(&r, d_root(d), 0);
 		ASSERT(strcmp(sb_get_str(&r), "\"Hello\"") == 0);
+
+		d_set_binary(d_root(d), d, 0, 25);
+		{
+			int i;
+			char *v = d_as_binary(d_root(d), 0);
+			for (i = 0; i < 25; i++)
+				v[i] = i*10;
+		}
+		sb_clear(&r);
+		to_string(&r, d_root(d), 0);
+		ASSERT(strcmp(sb_get_str(&r), "000a141e28323c46505a646e78828c96a0aab4bec8d2dce6f0") == 0);
+
 		d_dispose_dom(d);
 		sb_dispose(&r);
 	}

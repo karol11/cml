@@ -1,0 +1,50 @@
+:                            ; <-- array of arrays
+	:                        ; <-- array of ints
+		1
+		2
+		4
+	:                        ; <-- array of doubles
+		2.4
+		-5.5e-15
+	:                        ; <-- array of strings
+		"Red"
+		"White"
+		"Blue"
+	:                        ; <-- array of booleans
+		+
+		+
+		-
+		+
+	:                        ; <-- array of objects (separated with blank lines)
+		Command.f
+		send "format c:"
+		expect "ok"
+		
+		Url.g
+		value "google.com"
+		
+		Divider
+		
+		Toggle.nm
+		parameter "night mode"
+		state +
+	:                        ; <-- array of references to named objects
+		=g
+		=nm
+		=f
+		=f
+	:                        ; <-- array of mixed content (all objects trailed by blank lines)
+		Url
+		value "youtube.com"
+
+		=f
+		"asdf"
+		14
+		+
+		Point
+		x 42
+		y 10
+
+		Command
+		send "dir"
+		expect "dir(s)"

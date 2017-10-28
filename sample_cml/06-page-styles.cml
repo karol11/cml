@@ -1,0 +1,37 @@
+Page
+items:
+	Page.header
+	align 1
+	size 20
+	items:
+		Image.logo
+		align 2
+		size 20
+		url "logo.gif"
+
+		TextBox.title
+		content:
+			Span
+			text "\u000d\u000a\u0411\uffffTitle"
+			style TextStyle
+				parent TextStyle.main_style
+					family "Arial"
+					weight 400
+					size 12.15
+					color 0
+					italic -
+				size 240e-2
+				color 16436877
+
+	TextBox.mainText
+	content:
+		Span
+		text "Hello "
+		style=main_style
+
+		Span
+		text "world!\\\""
+		style TextStyle.bold
+			weight 600
+			italic +
+			parent=main_style

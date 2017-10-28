@@ -16,7 +16,7 @@ static const char *extract_id(d_var *v, char *id_buf) {
 		return name;
 	if (d_get_tag(v) == N_VISITED)
 		return 0;
-	sprintf(id_buf, "$%p", d_get_ref(v));
+	sprintf(id_buf, "_%p", d_get_ref(v));
 	return id_buf;
 }
 
@@ -56,7 +56,7 @@ static int traverse(struct cml_stax_writer_data *d, d_var *v, const char *field)
 		}
 	case CMLD_STRUCT:
 		if (!d_get_ref(v))
-			return cmlw_ref(d->w, field, "$");
+			return cmlw_ref(d->w, field, "_");
 		else if (d_get_tag(v) == N_WRITTEN) {
 			return cmlw_ref(d->w, field, extract_id(v, d->id_buf));
 		} else {
@@ -102,7 +102,7 @@ int cml_write(d_dom *dom, int (*putc)(void *context, char c), void *putc_context
 	{
 		int r = traverse(&data, d_root(dom), 0);
 		cmlw_dispose(data.w);
-		d_untag(d_get_ref(d_root(dom)));
+		d_untag(d_root(dom));
 		return r;
 	}
 }

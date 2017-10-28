@@ -43,3 +43,11 @@ void sb_puts(string_builder *b, const char *s) {
 	memcpy(b->pos, s, size);
 	b->pos += size;
 }
+
+int sb_size(string_builder *b) {
+	return b->pos - b->start;
+}
+void sb_trunc(string_builder *b, int size) {
+	if (size < b->pos - b->start)
+		b->pos = b->start + size;
+}

@@ -1,0 +1,1 @@
+"CML files are always UTF-8 files. No exceptions. All characters of string data presented as is but \" and \\. There is one generic escape in the form of \uffff"

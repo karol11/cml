@@ -228,7 +228,7 @@ d_var *d_ref_get_field(d_struct *s, d_field *field) {
 			&s->fields,
 			s->type->dom,
 			s->fields.size,
-			s->type->size - s->fields.size + 1);
+			s->type->size - s->fields.size);
 	return s->fields.items + field->index;
 }
 
@@ -337,21 +337,21 @@ size_t d_get_ref_tag(d_struct *s) {
 	return s ? s->tag : 0;
 }
 
-static void d_untag_var(d_var *v) {
-	if (v->type == CMLD_ARRAY) {
+void d_untag(d_var *v) {
+	if (v && v->type == CMLD_ARRAY) {
 		int c = v->array_val->size + 1;
 		for (v = v->array_val->items; --c;)
-			d_untag_var(v++);
+			d_untag(v++);
 	} else if (v->type == CMLD_STRUCT)
-		d_untag(v->struct_val);
+		d_untag_ref(v->struct_val);
 }
-void d_untag(d_struct *s) {
-	if (s->tag) {
+void d_untag_ref(d_struct *s) {
+	if (s && s->tag) {
 		int c = s->fields.size + 1;
 		d_var *v = s->fields.items;
 		s->tag = 0;
 		while (--c)
-			d_untag_var(v++);
+			d_untag(v++);
 	}
 }
 

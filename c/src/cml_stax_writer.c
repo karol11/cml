@@ -9,7 +9,7 @@ struct cml_stax_writer_tag {
 	void *putc_context;
 	int depth;
 	int in_array;
-	int array_just_started;
+	int blank_line_needed;
 	int in_error;
 };
 
@@ -40,9 +40,11 @@ static int write_indent(cml_stax_writer *w, int i) {
 }
 
 static int write_head(cml_stax_writer *w, const char *field) {
+	if (w->blank_line_needed && put_c(w, '\n'))
+		return w->in_error;
+	w->blank_line_needed = 0;
 	if (write_indent(w, w->depth + 1))
 		return w->in_error;
-	w->array_just_started = 0;
 	if (w->in_array != !field)
 		return w->in_error = CMLW_UNEXPECTED_FIELD;
 	if (field) {
@@ -61,7 +63,7 @@ cml_stax_writer *cmlw_create(int (*putc)(void *context, char c), void *putc_cont
 	w->depth = 0;
 	w->in_array = 1;
 	w->in_error = 0;
-	w->array_just_started = 1;
+	w->blank_line_needed = 0;
 	w->putc = putc;
 	w->putc_context = putc_context;
 	return w;
@@ -102,16 +104,11 @@ int cmlw_str(cml_stax_writer *w, const char *field, const char *s) {
 			if (put_s(w, "\\\""))
 				return w->in_error;
 		} else if (c <= 0x1f || (c >= 0x7f && c <= 0x9f) || c == 0x2028 || c == 0x2029) {
-			if (put_s(w, "\\u"))
+			char buffer[7];
+			sprintf(buffer,"\\u%04x", c);
+			if (put_s(w, buffer))
 				return w->in_error;
-			{
-				char buffer[21];
-				sprintf(buffer,"%04x", c);
-				if (put_s(w, buffer))
-					return w->in_error;
-			}
-		}
-		if (!put_utf8(c, w->putc, w->putc_context))
+		} else if (!put_utf8(c, w->putc, w->putc_context))
 			return w->in_error = CMLW_PUTC_ERROR;
 	}
 	return put_s(w, "\"\n");
@@ -124,21 +121,18 @@ int cmlw_array(cml_stax_writer *w, const char *field, int size) {
 		return w->in_error;
 	w->depth++;
 	w->in_array = 1;
-	w->array_just_started = 1;
 	put_s(w, size >= 0 ? sprintf(buffer,":%d\n", size), buffer : ":\n");
-	return w->in_error;
+	return w->in_error ? w->in_error : r;
 }
 
 int cmlw_end_array(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
-	w->array_just_started = 0;
+	w->blank_line_needed = 0;
 	return w->depth == 0 ? w->in_error = CMLW_UNPAIRED_END : (w->depth--, 0);
 }
 
 int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const char *id) {
 	int r = w->in_array;
-	if (w->in_array && !w->array_just_started && put_c(w, '\n'))
-		return w->in_error;
 	if (write_head(w, field) || put_s(w, type))
 		return w->in_error;
 	if (id && (put_c(w, '.') || put_s(w, id)))
@@ -147,12 +141,13 @@ int cmlw_struct(cml_stax_writer *w, const char *field, const char *type, const c
 		w->depth++;
 	w->in_array = 0;
 	put_c(w, '\n');
-	return w->in_error;
+	return w->in_error ? w->in_error : r;
 }
 
 int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
 	w->in_array = prev_state;
-	if (w->in_array) {}
+	if (w->in_array)
+		w->blank_line_needed = 1;
 	else if (w->depth)
 		w->depth--;
 	else
@@ -161,7 +156,7 @@ int cmlw_end_struct(cml_stax_writer *w, int prev_state) {
 }
 
 int cmlw_ref(cml_stax_writer *w, const char *field, const char *id) {
-	if (write_head(w, field) || put_c(w, '=') || put_s(w, id))
+	if (!(write_head(w, field) || put_c(w, '=') || put_s(w, id)))
 		put_c(w, '\n');
 	return w->in_error;
 }
@@ -181,11 +176,11 @@ int cmlw_bin(cml_stax_writer *w, const char *field, const char *data, int data_s
 	if (write_head(w, field) || put_s(w, temp))
 		return w->in_error;
 	for (; data_size >= 3; data_size -= 3, data += 3) {
-		int a = data[0];
-		int b = data[1];
-		int c = data[2];
+		int a = ((const unsigned char*)data)[0];
+		int b = ((const unsigned char*)data)[1];
+		int c = ((const unsigned char*)data)[2];
 		if (--per_row == 0) {
-			per_row = 64;
+			per_row = 20;
 			if (put_c(w, '\n') || write_indent(w, w->depth + 2))
 				return w->in_error;
 		}
@@ -196,14 +191,14 @@ int cmlw_bin(cml_stax_writer *w, const char *field, const char *data, int data_s
 			return w->in_error;
 	}
 	if (data_size != 0) {
-		int a = *data;
+		int a = *(const unsigned char*)data;
 		if (put_c(w, base64code2char(a >> 2)))
 			return w->in_error;
 		if (data_size == 1) {
 			if (put_c(w, base64code2char(a << 4)) || put_c(w, '='))
 				return w->in_error;
 		} else {
-			int b = data[1];
+			int b = ((const unsigned char*)data)[1];
 			if (put_c(w, base64code2char(a << 4 | b >> 4)) || put_c(w, base64code2char(b << 2)))
 				return w->in_error;
 		}
@@ -219,7 +214,10 @@ int cmlw_double(cml_stax_writer *w, const char *field, double value) {
 	char buffer[32];
 	if (write_head(w, field))
 		return w->in_error;
-	sprintf(buffer,"%lg\n", value);
+	if (value == (long long)value)
+		sprintf(buffer,"%lld.0\n", (long long)value);
+	else
+		sprintf(buffer,"%lg\n", value);
 	return put_s(w, buffer) ? w->in_error : 0;
 }
 
