@@ -18,8 +18,9 @@ extern "C" {
 #endif
 
 
-#define STR(A) #A
-#define ASSERT(A) if(!(A)) fail(__FILE__ STR(__LINE__));
+#define _STR(A) #A
+#define STR(A) _STR(A)
+#define ASSERT(A) if(!(A)) fail(__FILE__  " " STR(__LINE__));
 
 #define malloc test_malloc
 #define free test_free

@@ -1,0 +1,15 @@
+Config
+minVersion 1.14
+useStrict +
+openServices:
+	UDP.echo
+	port 1121
+	timeout 3600
+	
+	UDP.SNMP
+	port 2020
+	timeout 600
+
+	TCP.HTTP
+	port 80
+	timeout 3600

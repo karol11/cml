@@ -1,7 +1,7 @@
 #ifndef _CML_DOM_READER_TEST_H_
 #define _CML_DOM_READER_TEST_H_
 
-#include "../../src/tests.h"
+#include "../../src/cml_config.h"
 #include "../../src/cml_dom_reader.h"
 #include "dom_test.h"
 

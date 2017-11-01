@@ -102,6 +102,10 @@ public class CmlStaxReader {
 				if ((b = base64char2code(arrayIndent)) < 0) break;
 				r.write(a << 6 | b);
 			}
+			if (match('=')) {
+				while (match('=')){} //=
+				expectedNewLine();						
+			}
 			binVal = r.toByteArray();
 			return R_BINARY;
 		}
@@ -303,7 +307,7 @@ public class CmlStaxReader {
 			for (double p = 0.1; isDigit(cur); r *= 0.1, nextChar())
 				frac += p * (cur - '0');
 		}
-		if (match('e')) {
+		if (match('e') || match('E')) {
 			hasFractionPart = true;
 			frac = frac * Math.pow(10, (match('-') ? -1 : 1) * parseInt());
 		}

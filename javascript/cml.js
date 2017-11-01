@@ -10,6 +10,7 @@ var cml = (function(){
 			var wasIndented = false;
 			var indentWithTabs = false;
 			var indentPos = 0;
+			var wasEmptyLine = false;
 			if (!names)
 				names = new Map();
 			
@@ -40,25 +41,34 @@ var cml = (function(){
 			}
 			function expectedNewLine() {
 				skipWs();
-				if (cur == 0x0a) {
-					if (nextChar() == 0x0d)
-						nextChar();
-				} else if (cur == 0x0d) {
-					if (nextChar() == 0x0a)
-						nextChar();
-				} else if (cur > 0)
-					error("expected new line");
-				lineNumber++;
-				charPos = 1;
-				if (cur == 0x20 || cur == 0x09) {
-					if (!wasIndented) {
-						wasIndented = true;
-						indentWithTabs = cur == 0x09;
+				wasEmptyLine = false;
+				for (;;) {
+					if (cur == 0x0a) {
+						if (nextChar() == 0x0d)
+							nextChar();
+					} else if (cur == 0x0d) {
+						if (nextChar() == 0x0a)
+							nextChar();
+					} else if (cur > 0)
+						error("expected new line");
+					lineNumber++;
+					charPos = 1;
+					if (cur == 0x20 || cur == 0x09) {
+						if (!wasIndented) {
+							wasIndented = true;
+							indentWithTabs = cur == 0x09;
+						}
+						for (; cur == 0x20 || cur == 0x09; nextChar()) {				
+							if (indentWithTabs != (cur == 0x09))
+								error("mixed tabs and spaces");
+						}
 					}
-					for (; cur == 0x20 || cur == 0x09; nextChar()) {				
-						if (indentWithTabs != (cur == 0x09))
-							error("mixed tabs and spaces");
+					skipWs();
+					if (atEoln()) {
+						wasEmptyLine = true;
+						continue;
 					}
+					break;
 				}
 				indentPos =  cur > 0 ? charPos : 0;
 			}
@@ -109,7 +119,7 @@ var cml = (function(){
 					for (var p = 0.1; isDigit(cur); r *= 0.1, nextChar())
 						frac += p * (cur - 0x30); // '0'
 				}
-				if (match(0x65)) { //'e'
+				if (match(0x65) || match(0x45)) { //Ee
 					hasFractionPart = true;
 					frac = frac * Math.pow(10, (match(0x2d) ? -1 : 1) * parseInt()); //'-'
 				}
@@ -128,19 +138,22 @@ var cml = (function(){
 				return 0;
 			}
 			function char2code(termIndent) {
-				while (pos < data.length) {
-					var c = data.charCodeAt(pos++);
+				for (;;) {
+					skipWs();
+					var c = cur;
+					if (c == 0x0a || c == 0x0d) {
+						expectedNewLine();
+						if (indentPos <= termIndent)
+							return -1;
+						continue;
+					}
+					nextChar();
 					if (c >= 0x41 && c <= 0x5a) return c - 0x41; // A-Z
 					if (c >= 0x61 && c <= 0x7a) return c - 0x61 + 26; // a-z
 					if (c >= 0x30 && c <= 0x39) return c - 0x30 + 52; // 0-9
 					if (c == 0x2b) return 62;//+
 					if (c == 0x2f) return 63;///
-					if (c == 0x0a || c == 0x0d) {
-						expectedNewLine();
-						if (indentPos <= termIndent)
-							return -1;
-					}
-					if (c < 0x20 || c == 0x3d) { cur = c; return -1; } //=
+					if (c < 0x20 || c == 0x3d)  return -1; //=
 				}
 				return -1;
 			}
@@ -171,6 +184,7 @@ var cml = (function(){
 					return r;
 				}
 				if (match(0x23)) { //#
+					skipWs();
 					var size = parseInt();
 					var r = new ArrayBuffer(size);
 					var arr = new Uint8Array(r);
@@ -185,9 +199,10 @@ var cml = (function(){
 						if ((b = char2code(arrayIndent)) < 0) break;
 						arr[dst++] = a << 6 | b;
 					}
-					while (match(0x3d)){
-					} //=
-					expectedNewLine();
+					if (match(0x3d)) {
+						while (match(0x3d)){} //=
+						expectedNewLine();
+					}
 					return r;
 				}
 				if (match(0x22)) { //'"'
@@ -230,17 +245,16 @@ var cml = (function(){
 				var type = getId("type");
 				var id = match(0x2e) ? getId("object") : null;//'.'
 				var objectIndent = indentPos;
-				if (inArray)
-					objectIndent--;
+				var effectiveIndent = inArray ? objectIndent - 1 : objectIndent;
 				expectedNewLine();
 				var r = factory instanceof Function ? factory(type) :
 					typeof factory === "string" ? (function(){ var r = {}; r[factory]=type; return r; })() : {};
 				if (id)
 					names.set(id, r);
-				while (indentPos > objectIndent)
+				while (!wasEmptyLine && indentPos > effectiveIndent)
 					r[getId("field")] = parseNode(false);
-				while (atEoln())
-					expectedNewLine();
+				if (indentPos == objectIndent)
+					wasEmptyLine = false;
 				return r;
 			}
 			expectedNewLine();
@@ -255,13 +269,14 @@ var cml = (function(){
 					revNames.set(names.get(i), i);				
 			}
 			var visited = new Map(); // undefined = not visited, 0 = referenced once, >0 referenced twice+ =id, <0 written abs() = id
+			var idNumerator = 0;
 			function scan(v) {
 				if (Array.isArray(v)) {
 					for (var i = 0; i < v.length; i++)
 						scan(v[i]);
 				} else if (typeof v === "object") {
 					var id = visited.get(v);
-					visited.set(v, id === undefined ? 0 : id+ 1);
+					visited.set(v, id === undefined ? 0 : ++idNumerator);
 					for (var field in v) {
 					   if (v.hasOwnProperty(field) && field != "prototype")
 						  scan(v[field]);
@@ -293,11 +308,16 @@ var cml = (function(){
 					for (var i = 0; i < v.length; i++)
 						writeNode(v[i], indent, indent, i < v.length - 1);
 				} else if (v instanceof ArrayBuffer) {
-					out += prefix + "#" + v.length + " ";
-					var arr = new Uint8Array(r);
+					var arr = new Uint8Array(v);
+					out += prefix + "#" + arr.length;
 					var src = 0;
 					var srcSize = arr.length;
+					var perLine = 1;
 					for (; srcSize >= 3; srcSize -= 3) {
+						if (--perLine == 0) {
+							perLine = 32;
+							out += "\n" + indent;
+						}
 						var a = arr[src++];
 						var b = arr[src++];
 						var c = arr[src++];
@@ -323,7 +343,7 @@ var cml = (function(){
 				} else if (t === "object") {
 					var id = visited.get(v);
 					if (id < 0)
-						out += prefix + '=' + getId(id, v);
+						out += prefix + '=' + getId(id, v) + "\n";
 					else {
 						var excludedField = null;
 						var t =

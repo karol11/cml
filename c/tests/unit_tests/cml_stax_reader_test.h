@@ -1,7 +1,7 @@
 #ifndef _CML_STAX_READER_TEST_H_
 #define _CML_STAX_READER_TEST_H_
 
-#include "../../src/tests.h"
+#include "../../src/cml_config.h"
 #include "../../src/cml_stax_reader.h"
 #include "../../src/string_builder.h"
 

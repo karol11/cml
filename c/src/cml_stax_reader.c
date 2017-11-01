@@ -25,7 +25,7 @@ struct cml_stax_reader_tag {
 	long long int_val;
 	int size_val;
 	
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 	double dbl_val;
 #endif
 
@@ -156,7 +156,7 @@ static long long parse_int(cml_stax_reader *r) {
 
 static int parse_num(cml_stax_reader *r, int sign) {
 	long long i = parse_int(r);
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 	double fract;
 	int has_fract = match(r, '.');
 	if (has_fract) {
@@ -410,7 +410,7 @@ int cmlr_binary(cml_stax_reader *r, char *dst) {
 	return !r->error;
 }
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 
 double cmlr_double(cml_stax_reader *r) {
 	return r->dbl_val;

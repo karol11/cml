@@ -1,6 +1,6 @@
 TestConfig
 cmlList:
-	"00-hello-world-439.cml"
+	"00-hello-world.cml"
 	"01-int.cml"
 	"02-string.cml"
 	"03-bool.cml"

@@ -1,7 +1,7 @@
 #ifndef _UTF8_TEST_H_
 #define _UTF8_TEST_H_
 
-#include "../../src/tests.h"
+#include "../../src/cml_config.h"
 #include "../../src/utf8.h"
 
 static int get_c(void *context) {

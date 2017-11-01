@@ -37,7 +37,7 @@ static int traverse(struct cml_stax_writer_data *d, d_var *v, const char *field)
 			char *data = d_as_binary(v, &size);
 			return cmlw_bin(d->w, field, data, size);
 		}
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 	case CMLD_DOUBLE:
 		return cmlw_double(d->w, field, d_as_double(v, 0));
 #endif

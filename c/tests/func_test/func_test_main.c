@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "../../src/dom.h"
 #include "../../src/cml_dom_writer.h"
 #include "../../src/cml_dom_reader.h"
@@ -68,7 +69,7 @@ void match(d_var *a, d_var *b) {
 	case CMLD_INT: assert(d_as_int(a, -1) == d_as_int(b, -1), "int_val %d vs %d", d_as_int(a, -1), d_as_int(b, -1)); break;
 	case CMLD_BOOL: assert(d_as_bool(a, -1) == d_as_bool(b, -1), "bool val %d vs $d", d_as_bool(a, -1), d_as_bool(b, -1)); break;
 	case CMLD_STR: assert(strcmp(d_as_str(a, ""), d_as_str(b, "")) == 0, "str val %s vs %s", d_as_str(a, ""), d_as_str(b, "")); break;
-	case CMLD_DOUBLE: assert(d_as_double(a, 0) == d_as_double(b, 0), "double val %lld vs %lld", d_as_double(a, 0), d_as_double(b, 0)); break;
+	case CMLD_DOUBLE: assert(fabs(d_as_double(a, 0) - d_as_double(b, 0)) < 0.00001, "double val %llg vs %llg", d_as_double(a, 0), d_as_double(b, 0)); break;
 	case CMLD_BINARY:
 		{
 			int i = -1, sa, sb;

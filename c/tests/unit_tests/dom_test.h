@@ -2,7 +2,7 @@
 #define _CML_DOM_TEST_H_
 
 #include "../../src/dom.h"
-#include "../../src/tests.h"
+#include "../../src/cml_config.h"
 #include "../../src/string_builder.h"
 
 static void to_string(string_builder *r, d_var *v, const char *field) {
@@ -15,7 +15,7 @@ static void to_string(string_builder *r, d_var *v, const char *field) {
 	case CMLD_BOOL:
 		sb_puts(r, d_as_bool(v, 0) ? "true" : "false");
 		break;
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 	case CMLD_DOUBLE:
 		{
 			char buf[32];

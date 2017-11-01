@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cml2json", ".\converters\cml2json\cml2json.vcproj", "{C648C467-61D9-4F0E-B3B9-C555D5387564}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "json2cml", ".\converters\json2cml\json2cml.vcproj", "{F563B328-13DB-456E-98AE-2822CB9BED4F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functional_test", ".\tests\func_test\func_test.vcproj", "{F563B328-13DB-456E-98AE-2822CB9BED41}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unit_tests", ".\tests\unit_tests\unit_tests.vcproj", "{2AEDEA4D-0032-41E2-998A-C77FA2063400}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C648C467-61D9-4F0E-B3B9-C555D5387564}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C648C467-61D9-4F0E-B3B9-C555D5387564}.Debug|Win32.Build.0 = Debug|Win32
+		{C648C467-61D9-4F0E-B3B9-C555D5387564}.Release|Win32.ActiveCfg = Release|Win32
+		{C648C467-61D9-4F0E-B3B9-C555D5387564}.Release|Win32.Build.0 = Release|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED4F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED4F}.Debug|Win32.Build.0 = Debug|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED4F}.Release|Win32.ActiveCfg = Release|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED4F}.Release|Win32.Build.0 = Release|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED41}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED41}.Debug|Win32.Build.0 = Debug|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED41}.Release|Win32.ActiveCfg = Release|Win32
+		{F563B328-13DB-456E-98AE-2822CB9BED41}.Release|Win32.Build.0 = Release|Win32
+		{2AEDEA4D-0032-41E2-998A-C77FA2063400}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2AEDEA4D-0032-41E2-998A-C77FA2063400}.Debug|Win32.Build.0 = Debug|Win32
+		{2AEDEA4D-0032-41E2-998A-C77FA2063400}.Release|Win32.ActiveCfg = Release|Win32
+		{2AEDEA4D-0032-41E2-998A-C77FA2063400}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
