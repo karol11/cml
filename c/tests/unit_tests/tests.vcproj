@@ -177,18 +177,18 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\tests.h"
+				RelativePath="..\..\src\tests.h"
 				>
 			</File>
 			<Filter
 				Name="string_builder"
 				>
 				<File
-					RelativePath="..\src\string_builder.c"
+					RelativePath="..\..\src\string_builder.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\string_builder.h"
+					RelativePath="..\..\src\string_builder.h"
 					>
 				</File>
 				<File
@@ -200,11 +200,11 @@
 				Name="dom"
 				>
 				<File
-					RelativePath="..\src\dom.c"
+					RelativePath="..\..\src\dom.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\dom.h"
+					RelativePath="..\..\src\dom.h"
 					>
 				</File>
 				<File
@@ -216,11 +216,11 @@
 				Name="cml_stax_writer"
 				>
 				<File
-					RelativePath="..\src\cml_stax_writer.c"
+					RelativePath="..\..\src\cml_stax_writer.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\cml_stax_writer.h"
+					RelativePath="..\..\src\cml_stax_writer.h"
 					>
 				</File>
 			</Filter>
@@ -228,11 +228,11 @@
 				Name="cml_dom_writer"
 				>
 				<File
-					RelativePath="..\src\cml_dom_writer.c"
+					RelativePath="..\..\src\cml_dom_writer.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\cml_dom_writer.h"
+					RelativePath="..\..\src\cml_dom_writer.h"
 					>
 				</File>
 			</Filter>
@@ -240,11 +240,11 @@
 				Name="cml_stax_reader"
 				>
 				<File
-					RelativePath="..\src\cml_stax_reader.c"
+					RelativePath="..\..\src\cml_stax_reader.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\cml_stax_reader.h"
+					RelativePath="..\..\src\cml_stax_reader.h"
 					>
 				</File>
 				<File
@@ -256,11 +256,11 @@
 				Name="cml_dom_reader"
 				>
 				<File
-					RelativePath="..\src\cml_dom_reader.c"
+					RelativePath="..\..\src\cml_dom_reader.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\cml_dom_reader.h"
+					RelativePath="..\..\src\cml_dom_reader.h"
 					>
 				</File>
 				<File
@@ -272,15 +272,15 @@
 				Name="utf8"
 				>
 				<File
-					RelativePath="..\src\utf8.c"
+					RelativePath="..\..\src\utf8.c"
 					>
 				</File>
 				<File
-					RelativePath="..\src\utf8.h"
+					RelativePath="..\..\src\utf8.h"
 					>
 				</File>
 				<File
-					RelativePath="..\src\utf8_test.h"
+					RelativePath="..\..\src\utf8_test.h"
 					>
 				</File>
 			</Filter>

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "tests.h"
+#include "cml_config.h"
 #include "dom.h"
 
 typedef struct d_struct_tag d_struct;
@@ -18,7 +18,7 @@ struct d_var_tag {
 			char *bin_val;
 			int bin_size;
 		};
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 		double dbl_val;
 #endif
 	};
@@ -511,7 +511,7 @@ void d_gc(d_dom *dom,
 	}
 }
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 
 double d_as_double(d_var *src, double def_val) {
 	return src && src->type == CMLD_DOUBLE ? src->dbl_val : def_val;

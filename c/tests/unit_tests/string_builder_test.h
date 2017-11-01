@@ -1,8 +1,8 @@
 #ifndef _STRING_BUILDER_TEST_H_
 #define _STRING_BUILDER_TEST_H_
 
-#include "../src/string_builder.h"
-#include "../src/tests.h"
+#include "../../src/string_builder.h"
+#include "../../src/tests.h"
 
 const char test_text[] = "hello world!\nThis string constant is so long that it probably won't fit in initial 16-bytes buffer!";
 const char test_text1[] = "smaller";

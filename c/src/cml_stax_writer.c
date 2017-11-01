@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "tests.h"
+#include "cml_config.h"
 #include "cml_stax_writer.h"
 #include "utf8.h"
 
@@ -208,7 +208,7 @@ int cmlw_bin(cml_stax_writer *w, const char *field, const char *data, int data_s
 	return w->in_error;
 }
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 
 int cmlw_double(cml_stax_writer *w, const char *field, double value) {
 	char buffer[32];

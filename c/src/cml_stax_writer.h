@@ -1,6 +1,8 @@
 #ifndef _CML_STAX_WRITER_H_
 #define _CML_STAX_WRITER_H_
 
+#include "cml_config.h"
+
 typedef struct cml_stax_writer_tag cml_stax_writer;
 
 cml_stax_writer *cmlw_create(
@@ -26,7 +28,7 @@ int cmlw_struct(cml_stax_writer *writer, const char *field, const char *type, co
 int cmlw_end_struct(cml_stax_writer *writer, int prev_state);
 int cmlw_ref(cml_stax_writer *writer, const char *field, const char *id);
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 int cmlw_double(cml_stax_writer *writer, const char *field, double value);
 #endif
 

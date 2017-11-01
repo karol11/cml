@@ -1,8 +1,8 @@
 #ifndef _UTF8_TEST_H_
 #define _UTF8_TEST_H_
 
-#include "../src/tests.h"
-#include "../src/utf8.h"
+#include "../../src/tests.h"
+#include "../../src/utf8.h"
 
 static int get_c(void *context) {
 	return *(*(unsigned char**)context)++;

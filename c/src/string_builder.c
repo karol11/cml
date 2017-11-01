@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "tests.h"
+#include "cml_config.h"
 #include "string_builder.h"
 
 void sb_init(string_builder *b) {

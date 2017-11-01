@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "string_builder_test.h"
 #include "dom_test.h"
 #include "cml_stax_reader_test.h"

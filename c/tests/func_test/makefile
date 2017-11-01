@@ -1,14 +1,14 @@
 CC=gcc
-CCFLAGS=-Wall -O3 -DTESTS -DCONFIG_LIBC_FLOATINGPOINT
+CCFLAGS=-Wall -O3
 
 TARGET=test
 SRCS=\
-	tests-main.c\
-	../src/dom.c\
-	../src/string_builder.c\
-	../src/cml_stax_reader.c\
-	../src/cml_dom_reader.c\
-	../src/utf8.c
+	func_test_main.c\
+	../../src/dom.c\
+	../../src/string_builder.c\
+	../../src/cml_stax_reader.c\
+	../../src/cml_dom_reader.c\
+	../../src/utf8.c
 
 OBJS=$(SRCS:.c=.o)
 DEPS=$(SRCS:.c=.depends)

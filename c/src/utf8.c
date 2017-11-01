@@ -1,4 +1,4 @@
-#include "tests.h"
+#include "cml_config.h"
 #include "utf8.h"
 
 int get_utf8(int (*get_fn)(void *context), void *get_fn_context)

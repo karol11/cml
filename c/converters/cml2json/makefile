@@ -1,9 +1,9 @@
 CC=gcc
-CCFLAGS=-Wall -O3 -I../../src -DCONFIG_LIBC_FLOATINGPOINT
+CCFLAGS=-Wall -O3 -I../../src
 
 TARGET=cml2json
 SRCS=\
-	cml_to_json_stax_converter.c\
+	cml_to_json_converter.c\
 	../../src/string_builder.c\
 	../../src/cml_stax_reader.c\
 	../../src/utf8.c

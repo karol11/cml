@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
-#include "tests.h"
+#include "cml_config.h"
 #include "cml_stax_reader.h"
 #include "string_builder.h"
 #include "utf8.h"
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 #include <math.h>
 #endif
 
@@ -166,7 +166,7 @@ static int parse_num(cml_stax_reader *r, int sign) {
 		for (; is_digit(c); c = next_char(r), p *= 0.1)
 			fract += p * (c - '0');
 	}
-	if (match(r, 'e')) {
+	if (match(r, 'e') || match(r, 'E')) {
 		int ps = match(r, '-') ? -1 : 1;
 		fract = (has_fract ? fract : (double)i) * pow(10, ps * (double) parse_int(r));
 		has_fract = 1;

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "tests.h"
+#include "cml_config.h"
 #include "cml_stax_writer.h"
 #include "dom.h"
 #include "cml_dom_writer.h"

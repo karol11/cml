@@ -1,6 +1,8 @@
 #ifndef _CML_STAX_READER_H_
 #define _CML_STAX_READER_H_
 
+#include "cml_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,7 +44,7 @@ int cmlr_line_num(cml_stax_reader *);
 int cmlr_char_pos(cml_stax_reader *);
 const char *cmlr_error(cml_stax_reader *);
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 double cmlr_double(cml_stax_reader *);
 #endif
 

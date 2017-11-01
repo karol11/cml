@@ -1,9 +1,9 @@
 #ifndef _CML_DOM_TEST_H_
 #define _CML_DOM_TEST_H_
 
-#include "../src/dom.h"
-#include "../src/tests.h"
-#include "../src/string_builder.h"
+#include "../../src/dom.h"
+#include "../../src/tests.h"
+#include "../../src/string_builder.h"
 
 static void to_string(string_builder *r, d_var *v, const char *field) {
 	if (d_kind(v) != CMLD_UNDEFINED && field) {

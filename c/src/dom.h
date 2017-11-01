@@ -1,6 +1,8 @@
 #ifndef _CML_DOM_H_
 #define _CML_DOM_H_
 
+#include "cml_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -171,7 +173,7 @@ d_str *d_make_str(d_dom *dom, const char *val);
 //
 void d_set_str_ref(d_var *dst, d_str *ref);
 
-static void d_set_str(d_var *dst, d_dom *dom, const char *val) {
+cml_inline void d_set_str(d_var *dst, d_dom *dom, const char *val) {
 	d_set_str_ref(dst, d_make_str(dom, val));
 }
 
@@ -182,7 +184,7 @@ static void d_set_str(d_var *dst, d_dom *dom, const char *val) {
 //
 d_str *d_as_str_ref(d_var *src);
 
-static const char *d_as_str(d_var *src, const char *def_val) {
+cml_inline const char *d_as_str(d_var *src, const char *def_val) {
 	d_str *r = d_as_str_ref(src);
 	return r ? (const char*) r : def_val;
 }
@@ -259,7 +261,7 @@ d_var *d_set_ref(d_var *dst, d_struct *src);
 //
 // Creates a new struct and stores it in given node.
 //
-static d_var *d_set_struct(d_var *dst, d_type *type) {
+cml_inline d_var *d_set_struct(d_var *dst, d_type *type) {
 	return d_set_ref(dst, d_make_struct(type));
 }
 
@@ -268,7 +270,7 @@ static d_var *d_set_struct(d_var *dst, d_type *type) {
 //
 d_type *d_ref_get_type(d_struct *struc);
 
-static d_type *d_get_type(d_var *struc) {
+cml_inline d_type *d_get_type(d_var *struc) {
 	return d_ref_get_type(d_get_ref(struc));
 }
 
@@ -290,7 +292,7 @@ static d_type *d_get_type(d_var *struc) {
 //
 d_var *d_ref_peek_field(d_struct *struc, d_field *field);
 
-static d_var *d_peek_field(d_var *struc, d_field *field) {
+cml_inline d_var *d_peek_field(d_var *struc, d_field *field) {
 	return d_ref_peek_field(d_get_ref(struc), field);
 }
 
@@ -304,7 +306,7 @@ static d_var *d_peek_field(d_var *struc, d_field *field) {
 //
 d_var *d_ref_get_field(d_struct *struc, d_field *field);
 
-static d_var *d_get_field(d_var *struc, d_field *field) {
+cml_inline d_var *d_get_field(d_var *struc, d_field *field) {
 	return d_ref_get_field(d_get_ref(struc), field);
 }
 
@@ -314,7 +316,7 @@ static d_var *d_get_field(d_var *struc, d_field *field) {
 //
 void d_set_ref_tag(d_struct *struc, size_t tag);
 
-static void d_set_tag(d_var *struc, size_t tag) {
+cml_inline void d_set_tag(d_var *struc, size_t tag) {
 	d_set_ref_tag(d_get_ref(struc), tag);
 }
 
@@ -323,7 +325,7 @@ static void d_set_tag(d_var *struc, size_t tag) {
 //
 size_t d_get_ref_tag(d_struct *struc);
 
-static size_t d_get_tag(d_var *struc) {
+cml_inline size_t d_get_tag(d_var *struc) {
 	return d_get_ref_tag(d_get_ref(struc));
 }
 
@@ -344,7 +346,7 @@ void d_untag_ref(d_struct *s);
 //
 void d_set_ref_name(d_struct *target, const char *name);
 
-static void d_set_name(d_var *target, const char *name) {
+cml_inline void d_set_name(d_var *target, const char *name) {
 	d_set_ref_name(d_get_ref(target), name);
 }
 
@@ -358,7 +360,7 @@ d_struct *d_get_named(d_dom *dom, const char *name);
 //
 const char *d_get_ref_name(d_struct *target);
 
-static const char *d_get_name(d_var *target) {
+cml_inline const char *d_get_name(d_var *target) {
 	return d_get_ref_name(d_get_ref(target));
 }
 
@@ -393,7 +395,7 @@ void d_gc(
 void d_gc_mark(void *struct_id);
 
 
-#ifdef CONFIG_LIBC_FLOATINGPOINT
+#ifdef CONFIG_CML_FLOATINGPOINT
 
 double d_as_double(d_var *src, double def_val);
 void d_set_double(d_var *dst, double val);
