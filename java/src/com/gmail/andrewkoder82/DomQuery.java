@@ -12,6 +12,14 @@ public class DomQuery implements Iterable<DomQuery> {
 	public DomQuery field(String field) {
 		return target instanceof Dom.Struct ? query(((Dom.Struct)target).get(field)) : dummy;
 	}
+	public String typeName() {
+		return target instanceof Dom.Struct ? ((Dom.Struct)target).type.name : "";
+	}
+	public String name() {
+		String r = target instanceof Dom.Struct ? ((Dom.Struct)target).name : null;
+		return r == null ? "" : r;
+			
+	}
 	public DomQuery set(String field, Object val) {
 		if (target instanceof Dom.Struct)
 			((Dom.Struct)target).set(field, val);
@@ -136,13 +144,6 @@ public class DomQuery implements Iterable<DomQuery> {
 			}
 		}
 		return defVal;
-	}
-	public boolean asBool() {
-		if (target instanceof Boolean)
-			return (boolean)target;
-		if (target instanceof String)
-			return "true".equals((String) target);
-		return asInt(0) != 0;		
 	}
 	public String asStr(String defVal) {
 		if (target instanceof Integer || target instanceof Long || target instanceof Float || target instanceof Double || target instanceof Boolean)

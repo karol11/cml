@@ -160,12 +160,19 @@ void check_file(const char *name) {
 }
 
 int main() {
-	check_file("00-hello-world-439.cml");
-	check_file("05-objects.cml");
-	check_file("04-arrays.cml");
-	check_file("02-string.cml");
-	check_file("01-int.cml");
-	check_file("03-bool.cml");
-	check_file("06-page-styles.cml");
+	FILE *f = fopen("config.cml", "r");
+	d_dom *config;
+	int i, n;
+	d_var *list;
+	if (!f) {
+		printf("can't open config.cml");
+		exit(-1);
+	}
+	config = cml_read(getc, f, on_error, (void*)"config.cml");
+	fclose(f);
+	list = d_peek_field(d_root(config), d_lookup_field(d_lookup_type(config, "TestConfig"), "cmlList"));
+	for (i = -1, n = d_get_count(list); ++i < n;)
+		check_file(d_as_str(d_at(list, i), ""));
+	d_dispose_dom(config);
 	return 0;
 }

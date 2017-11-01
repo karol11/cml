@@ -18,7 +18,25 @@ public class CmlStaxReader {
 	static public final int R_DOUBLE = 8;
 	static public final int R_BINARY = 9;
 	static public final int R_EOF = 9;
+
+	Reader in;
+	boolean wasIndented;
+	boolean indentWithTabs;
+	int lineNumber = 0;
+	int indentPos = 0;
+	int charPos = 0;
+	int cur;
+	int curStateIndent = 0;
+	boolean inArray = true;
+	List<Integer> states = new ArrayList<Integer>();
 	
+	String field, type, strVal;
+	long longVal;
+	int sizeVal;
+	double dblVal;
+	boolean boolVal;
+	byte[] binVal;
+
 	public CmlStaxReader(Reader in) throws IOException {
 		this.in = in;
 		cur = '\n';
@@ -26,10 +44,31 @@ public class CmlStaxReader {
 	}
 
 	public int next() throws IOException {
-		if (indentPos < curStateIndent || cur < 0) {
+		while (cur == ';') {
+			skipWs();
+			expectedNewLine();
+		}
+		boolean emptyLine = cur == '\n' || cur == '\r';
+		if (emptyLine) {
+			do {
+				expectedNewLine();
+				skipWs();
+			} while (cur == '\n' || cur == '\r');
+			for (int i = states.size(); --i >= 0 && states.get(i) >> 1 >= indentPos;) {
+				int s = states.get(i);
+				if (s >> 1 == indentPos && (s & 1) == 0) {
+					states.set(i, s + 2);
+					break;
+				}
+			}
+		}
+		if (indentPos < curStateIndent || cur <= 0 || emptyLine) {
 			field = null;
-			if (states.size() == 0)
-				return R_EOF;
+			if (states.isEmpty()) {
+				if (cur > 0)
+					error("text after eof");
+				return R_EOF; 
+			}
 			boolean wasInArray = inArray;
 			int s = states.remove(states.size()-1);
 			inArray = (s & 1) != 0;
@@ -51,6 +90,7 @@ public class CmlStaxReader {
 		}
 		if (match('#')) {
 			int arrayIndent = indentPos;
+			skipWs();
 			ByteArrayOutputStream r = new ByteArrayOutputStream((int)parseInt());
 			expectedNewLine();
 			for (;;) {
@@ -74,6 +114,7 @@ public class CmlStaxReader {
 					case '\"': r.append('\"'); break;
 					case 'u':
 						r.append((char) (nextHex() << 12 | nextHex() << 8 | nextHex() << 4 | nextHex()));
+						break;
 					default:
 						error("unexpected string escape "+ (char)cur);
 					}
@@ -162,24 +203,6 @@ public class CmlStaxReader {
 		throw new RuntimeException(message + " at " + lineNumber + ":" + charPos);		
 	}
 
-	Reader in;
-	boolean wasIndented;
-	boolean indentWithTabs;
-	int lineNumber = 0;
-	int indentPos = 0;
-	int charPos = 0;
-	int cur;
-	int curStateIndent = 0;
-	boolean inArray = true;
-	List<Integer> states = new ArrayList<Integer>();
-	
-	String field, type, strVal;
-	long longVal;
-	int sizeVal;
-	double dblVal;
-	boolean boolVal;
-	byte[] binVal;
-	
 	void pushState(boolean newInArray, int newIndent) {
 		states.add(curStateIndent << 1 | (inArray ? 1 : 0));
 		inArray = newInArray;
@@ -222,7 +245,7 @@ public class CmlStaxReader {
 		while (cur == ' ' || cur == '\t') 
 			nextChar();
 		if (cur == ';') {
-			while (!atEoln())
+			while (cur != '\n' && cur != '\r' && cur > 0)
 				nextChar();
 		}
 	}
@@ -294,17 +317,20 @@ public class CmlStaxReader {
 	}
 	int base64char2code(int basePos) throws IOException {
 		for (;;) {
-			int c = nextChar();
+			skipWs();
+			int c = cur;
+			if (c == '\n' || c == '\r') {
+				expectedNewLine();
+				if (indentPos <= basePos)
+					return -1;
+				continue;
+			}
+			nextChar();
 			if (c >= 'A' && c <= 'Z') return c - 'A';
 			if (c >= 'a' && c <= 'z') return c - 'a' + 26;
 			if (c >= '0' && c <= '9') return c - '0' + 52;
 			if (c == '+') return 62;
 			if (c == '/') return 63;
-			if (c == '\n' || c == '\r') {
-				expectedNewLine();
-				if (indentPos <= basePos)
-					return -1;
-			}
 			if (c <= 0 || c == '=') return -1;
 		}
 	}

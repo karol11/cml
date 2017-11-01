@@ -7,6 +7,7 @@ import java.util.List;
 
 public class CmlStaxWriter {	
 	boolean inArray = true;
+	boolean blankLineNeeded = false;
 	String indent = "";
 	final Writer out;
 	final List<Boolean> states = new ArrayList<Boolean>();
@@ -21,13 +22,17 @@ public class CmlStaxWriter {
 		if (id != null)
 			out.append('.').append(id);
 		out.append('\n');
+		if (!inArray)
+			indent += "\t";	
 		pushState(false);
 	}
 
 	public void endObject() throws IOException{
 		popState();
 		if (inArray)
-			out.append('\n');
+			blankLineNeeded = true;
+		else
+			indent = indent.substring(1);
 	}
 	public void startArray(String field, int size) throws IOException {
 		addPrefix(field);
@@ -35,10 +40,13 @@ public class CmlStaxWriter {
 		if (size >= 0)
 			out.append(Integer.toString(size));
 		out.append('\n');
-		pushState(true);		
+		pushState(true);
+		indent += "\t";
 	}
 	public void endArray() {
+		blankLineNeeded = false;
 		popState();
+		indent = indent.substring(1);
 	}
 	public void writeInt(String field, long val) throws IOException {
 		addPrefix(field);
@@ -50,7 +58,10 @@ public class CmlStaxWriter {
 	}
 	public void writeFloat(String field, double val) throws IOException {
 		addPrefix(field);
-		out.append(Double.toString(val)).append("\n");		
+		if (val == (long)val)
+			out.append(Long.toString((long)val)).append(".0\n");
+		else
+			out.append(Double.toString(val).toLowerCase()).append("\n");
 	}
 	public void writeString(String field, String val) throws IOException {
 		addPrefix(field);
@@ -58,7 +69,7 @@ public class CmlStaxWriter {
 		for (int i = 0, n = val.length(); i < n; ++i) {
 			char c = val.charAt(i);
 			if (c <= 0x1f || (c >= 0x7f && c <= 0x9f) || c == 0x2028 || c == 0x2029)
-				r.append("\\u").append(String.format("%04X ", c));				
+				r.append("\\u").append(String.format("%04x", (int)c));				
 			else if (c == '"')
 				r.append("\\\"");
 			else if (c == '\\')
@@ -86,16 +97,17 @@ public class CmlStaxWriter {
 	}
 	
 	public void writeBin(String field, byte[] val, int at, int length) throws IOException {
+		addPrefix(field);
 		out.append('#').append(Integer.toString(length));
 		int perRow = 1;
 		for (; length >= 3; length -= 3, at += 3) {
 			if (--perRow == 0) {
 				out.append('\n').append(indent).append('\t');
-				perRow = 64;
+				perRow = 32;
 			}
-			int a = val[at];
-			int b = val[at + 1];
-			int c = val[at + 2];
+			int a = val[at] & 0xff;
+			int b = val[at + 1] & 0xff;
+			int c = val[at + 2] & 0xff;
 			out
 				.append(code2char(a >> 2))
 				.append(code2char(a << 4 | b >> 4))
@@ -103,14 +115,14 @@ public class CmlStaxWriter {
 				.append(code2char(c));
 		}
 		if (length != 0) {
-			int a = val[at];
+			int a = val[at] & 0xff;
 			out.append(code2char(a >> 2));
 			if (length == 1) {
 				out
 					.append(code2char(a << 4))
 					.append('=');
 			} else {
-				int b = val[at + 1];
+				int b = val[at + 1] & 0xff;
 				out
 					.append(code2char(a << 4 | b >> 4))
 					.append(code2char(b << 2));
@@ -123,13 +135,14 @@ public class CmlStaxWriter {
 	private void pushState(boolean newInArray) {
 		states.add(inArray);
 		inArray = newInArray;
-		indent += "\t";	
 	}
 	private void popState() {
 		inArray = states.remove(states.size() - 1);
-		indent = indent.substring(1);
 	}
 	private void addPrefix(String field) throws IOException {
+		if (blankLineNeeded)
+			out.append('\n');
+		blankLineNeeded = false;
 		out.append(indent);
 		if ((field == null) != inArray)
 			throw new RuntimeException("array item should have no field name");
