@@ -1,11 +1,11 @@
 Page
 items:
 	Page.header
-	align  1 # top-fixed
+	align  1 ; top-fixed
 	size  40.15
 	items:
 		Image.logo
-		align 2 # left-fixed
+		align 2 ; left-fixed
 		size  201e-1
 		url   "logo.gif"
 			
