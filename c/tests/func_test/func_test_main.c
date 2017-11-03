@@ -98,16 +98,16 @@ void match(d_var *a, d_var *b) {
 			d_struct *ra = d_get_ref(a);
 			d_struct *rb = d_get_ref(b);
 			assert((ra == 0) == (rb == 0), "is_null %p %p", ra, rb);
-			assert(d_get_ref_tag(ra) == d_get_ref_tag(rb), "topology ids %u %u", d_get_ref_tag(ra), d_get_ref_tag(rb));
-			if (d_get_ref_tag(ra))
+			assert(d_ref_get_tag(ra) == d_ref_get_tag(rb), "topology ids %u %u", d_ref_get_tag(ra), d_ref_get_tag(rb));
+			if (d_ref_get_tag(ra))
 				return;
 			{
 				d_type *ta = d_ref_get_type(ra);
 				d_type *tb = d_ref_get_type(rb);
-				const char *na = d_get_ref_name(ra);
-				const char *nb = d_get_ref_name(rb);
-				d_set_ref_tag(ra, ids_numerator);
-				d_set_ref_tag(rb, ids_numerator++);
+				const char *na = d_ref_get_name(ra);
+				const char *nb = d_ref_get_name(rb);
+				d_ref_set_tag(ra, ids_numerator);
+				d_ref_set_tag(rb, ids_numerator++);
 				assert(strcmp(d_type_name(ta), d_type_name(tb)) == 0, "types %s vs %s", d_type_name(ta), d_type_name(tb));
 				if (!na)
 					na = "";

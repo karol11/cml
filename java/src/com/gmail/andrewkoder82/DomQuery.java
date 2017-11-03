@@ -12,6 +12,9 @@ public class DomQuery implements Iterable<DomQuery> {
 	public DomQuery field(String field) {
 		return target instanceof Dom.Struct ? query(((Dom.Struct)target).get(field)) : dummy;
 	}
+	public DomQuery checkType(String structType) {
+		return typeName().equals(structType) ? this : dummy;
+	}
 	public String typeName() {
 		return target instanceof Dom.Struct ? ((Dom.Struct)target).type.name : "";
 	}

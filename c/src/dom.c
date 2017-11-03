@@ -332,12 +332,12 @@ d_struct *d_get_ref(d_var *s) {
 	return s && s->type == CMLD_STRUCT ? s->struct_val : 0;
 }
 
-void d_set_ref_tag(d_struct *s, size_t tag) {
+void d_ref_set_tag(d_struct *s, size_t tag) {
 	if (s)
 		s->tag = tag;
 }
 
-size_t d_get_ref_tag(d_struct *s) {
+size_t d_ref_get_tag(d_struct *s) {
 	return s ? s->tag : 0;
 }
 
@@ -347,9 +347,9 @@ void d_untag(d_var *v) {
 		for (v = v->array_val->items; --c;)
 			d_untag(v++);
 	} else if (v->type == CMLD_STRUCT)
-		d_untag_ref(v->struct_val);
+		d_ref_untag(v->struct_val);
 }
-void d_untag_ref(d_struct *s) {
+void d_ref_untag(d_struct *s) {
 	if (s && s->tag) {
 		int c = s->fields.size + 1;
 		d_var *v = s->fields.items;
@@ -393,11 +393,11 @@ d_struct *d_get_named(d_dom *dom, const char *name) {
 	return i < 0 ? 0 : dom->named.items[i].struct_val;
 }
 
-const char *d_get_ref_name(d_struct *target) {
+const char *d_ref_get_name(d_struct *target) {
 	return target ? target->name : 0;
 }
 
-void d_set_ref_name(d_struct *target, const char *name) {
+void d_ref_set_name(d_struct *target, const char *name) {
 	if (target) {
 		d_dom *dom = target->type->dom;
 		int my_prev_name = target->name ? get_named_index(target->type->dom, target->name) : -1;

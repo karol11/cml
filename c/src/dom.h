@@ -314,26 +314,26 @@ cml_inline d_var *d_get_field(d_var *struc, d_field *field) {
 // Sets tag on structure.
 // This is useful for detecting cycles in graph traversing.
 //
-void d_set_ref_tag(d_struct *struc, size_t tag);
+void d_ref_set_tag(d_struct *struc, size_t tag);
 
 cml_inline void d_set_tag(d_var *struc, size_t tag) {
-	d_set_ref_tag(d_get_ref(struc), tag);
+	d_ref_set_tag(d_get_ref(struc), tag);
 }
 
 //
 // Gets tag.
 //
-size_t d_get_ref_tag(d_struct *struc);
+size_t d_ref_get_tag(d_struct *struc);
 
 cml_inline size_t d_get_tag(d_var *struc) {
-	return d_get_ref_tag(d_get_ref(struc));
+	return d_ref_get_tag(d_get_ref(struc));
 }
 
 //
 // Remove all tags tracing DOM starting at given d_var.
 //
 void d_untag(d_var *v);
-void d_untag_ref(d_struct *s);
+void d_ref_untag(d_struct *s);
 
 //
 // --------------------------- Name Manipulation Routines -----------------
@@ -344,10 +344,10 @@ void d_untag_ref(d_struct *s);
 // If given struct had dad a name, the old name is removed.
 // If this name had been assigned to a different struct, it becomes unnamed.
 //
-void d_set_ref_name(d_struct *target, const char *name);
+void d_ref_set_name(d_struct *target, const char *name);
 
 cml_inline void d_set_name(d_var *target, const char *name) {
-	d_set_ref_name(d_get_ref(target), name);
+	d_ref_set_name(d_get_ref(target), name);
 }
 
 //
@@ -358,10 +358,10 @@ d_struct *d_get_named(d_dom *dom, const char *name);
 //
 // Get struct name.
 //
-const char *d_get_ref_name(d_struct *target);
+const char *d_ref_get_name(d_struct *target);
 
 cml_inline const char *d_get_name(d_var *target) {
-	return d_get_ref_name(d_get_ref(target));
+	return d_ref_get_name(d_get_ref(target));
 }
 
 //
