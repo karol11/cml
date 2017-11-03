@@ -1,5 +1,4 @@
-How to use CML in C
--------------------
+## How to use CML in C
 
 CML C library contents:
 
@@ -13,51 +12,52 @@ Using DOM is the easiest way of reading and writing CML files.
 - utf8 - utf32<->utf8 tracscoders, used internally in reader and writer.
 
 
-Streaming
----------
+## Streaming
 
-CML library uses pointers to getc and putc functions along with context for these functions to pull and push. TBD
+CML library uses pointers to getc and putc functions along with context for these functions to pull and push characters to- and from streams. This allows using arbitrary data streams.
 
+## Source code
+The 
 
-How to use CML as config file
+## How to use CML as config file
 -----------------------------
 
 1. Add to your project:
-    - cml_stax_reader.c
+	- cml_stax_reader.c
 	- dom.c
 	- cml_dom_reader.c
 	- string_builder.c
 	- utf8.c
 2. define `d_dom *config;` as global variable (or where you'll need access to you config).
 3. At start open file and read its contents to DOM:
-```C++
-FILE *f = fopen("config.cml", "r");
-config = cml_read(getc, f, 0, 0);
-fclose(f);
-```
+	```C++
+	FILE *f = fopen("config.cml", "r");
+	config = cml_read(getc, f, 0, 0);
+	fclose(f);
+	```
 4. When configuration parameters are needed, read their values:
-Let's imagine, we have config storing the array of strings:
-```
-:
-  "apples"
-  "oranges"
-  "pears"
-```
-It can be accessed using this code:
+	Let's imagine, we have config storing the array of strings:
+	```
+	:
+	  "apples"
+	  "oranges"
+	  "pears"
+	```
+	It can be accessed using this code:
 
-```c++
-d_var *list = d_root(config);
-for (int i = 0; i < d_get_count(list); i++)
-	printf("[%d] = %s\n", i, d_as_str(d_at(list, i), ""));
-	
-```
-Where:
-- d_var* - is a pointer to any CML DOM node - a root node, array item, struct field etc.
-- d_root - returns the root node of given DOM
-- d_get_count - returns elements count for array node (or 0 for all other nodes, so it's safe)
-- d_at returns i-th element of array node (or an undefined node otherwise, so it's also safe)
-- d_as_str returns char* to internal text buffer of given string node (or its second parameter if it is not a string node).
-So despite its simplicity this code handles all unexpected CML format conditions.
+	```c++
+	d_var *list = d_root(config);
+	for (int i = 0; i < d_get_count(list); i++)
+		printf("[%d] = %s\n", i, d_as_str(d_at(list, i), ""));
+
+	```
+	Where:
+	- d_var* - is a pointer to any CML DOM node - a root node, array item, struct field etc.
+	- d_root - returns the root node of given DOM
+	- d_get_count - returns elements count for array node (or 0 for all other nodes, so it's safe)
+	- d_at returns i-th element of array node (or an undefined node otherwise, so it's also safe)
+	- d_as_str returns char* to internal text buffer of given string node (or its second parameter if it is not a string node).
+	So despite its simplicity this code handles all unexpected CML format conditions.
 
 5. PROFIT, we did it using just 6 lines of code including fopen and fclose!
 
@@ -66,25 +66,74 @@ What if config file contains other data types?
 - d_as_binary returns binary values as buffer ptr and size.
 - d_peek_field - returns a structure field value.
 
+## Error handling
 
-Config having structures needs more explanation and a separate example
+1. Check fopen for errors, because libc getc doesn't do it for you.
+2. Pass `on_error` function and its context as last two parameters `cml_read` and/or check its result for NULL.
+	```C++
+	void on_error(void *context, const char *error, int line_num, int char_pos) {
+		printf("error %s at %s %d:%d\n", error, context, line_num, char_pos);
+		exit(-1);
+	}
+	...
+	config = cml_read(getc, f, on_error, "config.cml");
+	```
+3. Althought it is not needed, you can explicitly check all `d_var*` for NULL and/or use `d_kind(var)` to check for real data types.
 
-This time our config have looks like this:
+## Config having structures
+
+This time our config looks like this:
 ```
-ProcessingConfig
-src "http://aaa.com/nnn.mp4"
-rules:  
-  Crop
-  left 10
-  right -10
-  top 20
-  bottom -42
-  
-  Deinterlace
-  
-  
+Cloud
+description "Controller + N Compute Topology - x86 KVM"
+password "MyCloudPassword"
+database_service_type Db2
+messaging_service_type Rabbitmq
+nodes:
+  Controller.mainCtl
+  description "Cloud controller node"
+  fqdn "controllername.company.com"
 
+  Kvm_compute
+  description "Cloud KVM compute node"
+  fqdn "kvmcomputename.company.com"
+  identity_file "/root/identity.pem"
 ```
+Now it contains structures having fields.
+It can be accessed this way.
+```C++
+config = cml_read(getc, f, 0, 0);
+d_type *cloud_t = d_lookup_type(config, "Cloud"); // Get the `Cloud` structure descriptor contained in  the loaded DOM.
+d_field *cloud_pass = d_lookup_field(cloud_t, "password"); // Get the descriptor of `password` field of `Cloud` structure.
+char *pass = d_as_str(d_peek_field(d_root(config), cloud_pass), "");
+```
+What if loaded CML has no `Cloud` structure of `password` field?
+Nothing bad happens: `d_lookup_*` functions return NULL, and `d_peek_*` simply return an `undefined` node.
 
-Right after 
-TBD
+The last expression of this example checks:
+- if root node holds structure,
+- if it is of type `Cloud`
+- if it has field `password`
+- if its type is string.
+If any condition fails, `pass` will point to `def_val` parameter of `d_as_str` that is "" in this example. 
+
+## Access to named objects
+In the above example there is a named object `mainCtl`.
+Your application can directly access objects by names:
+```C++
+d_var *mainCtl_fqdn = d_ref_peek_field(
+	d_get_named(config, "mainCtl"),
+	d_lookup_field(d_lookup_type(config, "Controller"), "fqdn"));
+```
+Where:
+- `d_get_named` returns direct pointer to named struct as `struct_t`
+- `d_ref_peek_field` acts as `d_peek_field` but accepts `struct_t` instead of `var_t`
+
+## Cleanup
+If the loaded data is no more needed call `d_dispose_dom(config)`.
+
+## See also
+- TBD How to load CML from other sources (memory, std::streams, sockets etc.)
+- TBD How to create and modify DOM and write it to CMLs.
+- TBD How to write application data directly to CML in STAX mode bypassing DOM creation.
+- TBD How to read CML to application structures withoud DOM.
