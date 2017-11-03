@@ -40,12 +40,12 @@ I beleive anyone has to have ability to inspect, debug and tailor this code for 
 	It can be accessed using this code:
 
 	```Java
-  for (DomQuery i: query(config.root))
-      System.out.println(i.asStr(""));
+	for (DomQuery i: query(config.root))
+	    System.out.println(i.asStr(""));
 	```
 	Where:
 	- DomQuery - a wrapper simplifying access to DOM nodes.
-  - query - DomQuery constructor function. 
+	- query - DomQuery constructor function. 
 	- config.root - returns the root node of given DOM
 	- DomQuery.asStr - extracts string data from node (if node cannot be converted to string returns its defVal parameter).
 	So despite its simplicity this code handles all unexpected CML format conditions.
@@ -69,7 +69,9 @@ if (config.root instanceof List<?>)
 
 ## Error handling
 
+Parser throws RuntimeException on syntax errors.
 
+Not very handy, but you can always modify CmlStaxReader.error method...
 
 ## Config having structures
 
