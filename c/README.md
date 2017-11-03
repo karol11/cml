@@ -135,6 +135,11 @@ Where:
 - `d_get_named` returns direct pointer to named struct as `struct_t`
 - `d_ref_peek_field` acts as `d_peek_field` but accepts `struct_t` instead of `var_t`
 
+What is the difference between var_t and struct_t.
+- `var_t` - is an assignable, mutable variable (root object, field of structure, array item), that can hold int, bool... and struct pointer.
+- `struct_t` - is a struct pointer.
+You can always extract struct_t from var_t by `d_get_ref` call.
+
 ## Cleanup
 If the loaded data is no more needed call `d_dispose_dom(config)`.
 
