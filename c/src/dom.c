@@ -243,7 +243,11 @@ int d_get_count(d_var *s) {
 }
 
 long long d_as_int(d_var *v, long long def_val) {
-	return v && v->type == CMLD_INT ? v->int_val : def_val;
+	return v && v->type == CMLD_INT ? v->int_val :
+#ifdef CONFIG_CML_FLOATINGPOINT
+		v && v->type == CMLD_DOUBLE ? (long long) v->dbl_val : 
+#endif
+		def_val;
 }
 
 int d_as_bool(d_var *v, int def_val) {

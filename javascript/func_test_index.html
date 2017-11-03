@@ -1,0 +1,35 @@
+<html>
+<body style="width:100%">
+<pre id='out'></pre>
+
+<script src="cml.js"></script>
+
+<script>
+
+function readFile(name, onReady) {
+	var reader = new XMLHttpRequest();
+	reader.open('GET', name);
+	reader.setRequestHeader('Cache-Control', 'no-cache');
+	reader.onreadystatechange = function() {
+		if (reader.readyState == 4)
+			onReady(reader.responseText, name);
+	}
+	reader.send();
+}
+
+readFile("config.cml", function(t){
+	var list = cml.parse(t, "type").cmlList;
+	for(var i = 0; i < list.length; i++) {
+		readFile(list[i], function(t, name) {
+			out.innerHTML += "--" + name + "\n";
+			var a = cml.parse(t, "type");
+			out.innerHTML += cml.stringify(a, "type") + "\n";
+		});
+	}
+});
+
+</script>
+
+</body>
+
+</html>
