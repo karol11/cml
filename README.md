@@ -1,6 +1,6 @@
 CML
 ---
-CML - is a text-based object serialization data format.
+CML - is a text-based object representation data format.
 
 Its nearest analogs are YAML, XML and JSON.
 
@@ -29,7 +29,7 @@ items:
 
   Divider
 
-  Submenu.resents
+  Submenu.recents
   caption "Recent files"
 ```
 And here is a more complex example showing all CML features
