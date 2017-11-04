@@ -96,7 +96,7 @@ Now it contains structures having fields.
 It can be accessed this way.
 ```Java
 config = CmlDomReader.read(new FileReader("config.cml"));
-String pass = query(config.root).chechType("Cloud").field("password").asStr("");
+String pass = query(config.root).checkType("Cloud").field("password").asStr("");
 
 // Or without DomQuery
 String pass = "";
@@ -111,10 +111,10 @@ if (config.root instanceof Dom.Struct) {
 ```
 Where:
 - `Dom.Struct` - Data type of CML structures. It contains field map, name and type information.
-- `DomQuery.chechType` - checks if CML node is a struct of given type.
+- `DomQuery.checkType` - checks if CML node is a struct of given type.
 - `DomQuery.field` - returns field value.
 
-The last expression `String pass = query(config.root).chechType("Cloud").field("password").asStr("");`
+The last expression `String pass = query(config.root).checkType("Cloud").field("password").asStr("");`
 checks:
 - if the root node holds a structure,
 - if this structure is of type `Cloud`
