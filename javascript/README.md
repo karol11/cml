@@ -12,7 +12,7 @@ Example
 var domRoot = cml.parse(t, "type");
 ```
 
-Prototype
+Formal definition
 ```
 cml.parse(string_source, factory, name_map)
 ```
@@ -56,14 +56,14 @@ Example
 var cml = cml.stringify(domRoot, "type");
 ```
 
-Prototype
+Formal definition
 ```
 cml.stringify(rootObject, typer, name_map)
 ```
 Where
 - `rootObject` - Root object to be written to CML.
 - `typer`
-  - If function, it is called for each structure. It receives object to be written and returnsits type name.
+  - If function, it is called for each structure. It receives object to be written and returns its type name.
   - If string, it defines a field name storing type (this field itself gets excluded from serialization).
 - `name_map`
   - If Map, it is used to resolve external names, and filled with new names.
