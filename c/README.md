@@ -145,6 +145,6 @@ If the loaded data is no more needed call `d_dispose_dom(config)`.
 
 ## See also
 - TBD How to load CML from other sources (memory, std::streams, sockets etc.)
-- TBD How to create and modify DOM and write it to CMLs.
+- [How to create and modify DOM and write it to CMLs.](https://github.com/karol11/cml/wiki/How-to-create-DOM-and-write-it-to-CMLs-in-C-and-CPP)
 - TBD How to write application data directly to CML in STAX mode bypassing DOM creation.
 - TBD How to read CML to application structures withoud DOM.
