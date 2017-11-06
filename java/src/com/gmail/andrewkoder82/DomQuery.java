@@ -53,6 +53,15 @@ public class DomQuery implements Iterable<DomQuery> {
 		}
 		return dummy;
 	}
+	public DomQuery add(Object val) {
+		if (target instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<Object> l = (List<Object>)target;
+			l.add(val);
+			return this;
+		}
+		return dummy;
+	}
 	public DomQuery remove(int index) {
 		if (target instanceof List) 
 			((List<?>)target).remove(index);
