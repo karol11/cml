@@ -13,7 +13,7 @@ Using DOM is the easiest way of reading and writing CML files.
 ## Source code
 
 All CML-related things is always presented in the form of source code (not in compiled class form).
-I beleive anyone has to have ability to inspect, debug and tailor this code for one projects.
+I beleive anyone has to have ability to inspect, debug and tailor this code for one's projects.
 
 ## How to use CML as config file
 -----------------------------
