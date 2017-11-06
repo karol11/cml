@@ -7,7 +7,7 @@ Its nearest analogs are YAML, XML and JSON.
 The main features that distinguish CML from competitors are:
 - CML stores explicit type information,
 - Its data formats are not limited to tree-like structures, CML can store arbitrary cross-references,
-- CML has simple, obvious and unambiguous syntax ideally suitable both for human reader and computer parsing.
+- CML has simple, obvious and unambiguous syntax ideally suitable both for a human reader and computer parsing.
 
 This repository contains libraries for
 - JavaScript,
@@ -56,10 +56,10 @@ points:                        ; <- another field of root polygon containing an 
   y 0
 focused=p1                     ; <- this field is a *reference* to the Point.p1
 background# 177                ; <- this field contains binary data
-	R0lGODdhGAAgAKIAAAAAAIAAAICAgMDAwP8AAP
-	///wAAAAAAACwAAAAAGAAgAAAEfpDISau9VhTM
-	6/hdSAybyBWleaGDuhatOwkkLE8wGd8FnfK6m0
-	RnExJ6IOPAZyQIfD/X87O7PafCJVVg4jqXtI+X
-	E74KAACzJwk2n9Hn8PYpoVMG8LjblE8L32dVKg
-	FTAUpaY1JLAEuGUmlocDJvkX6PlZZSAWiERgIB
-	hIIVEQA7
+  R0lGODdhGAAgAKIAAAAAAIAAAICAgMDAwP8AAP
+  ///wAAAAAAACwAAAAAGAAgAAAEfpDISau9VhTM
+  6/hdSAybyBWleaGDuhatOwkkLE8wGd8FnfK6m0
+  RnExJ6IOPAZyQIfD/X87O7PafCJVVg4jqXtI+X
+  E74KAACzJwk2n9Hn8PYpoVMG8LjblE8L32dVKg
+  FTAUpaY1JLAEuGUmlocDJvkX6PlZZSAWiERgIB
+  hIIVEQA7
