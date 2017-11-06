@@ -15,12 +15,12 @@ Using DOM is the easiest way of reading and writing CML files.
 ## Streaming
 
 CML library uses pointers to getc and putc functions along with context for these functions to pull and push characters to- and from streams. This allows using arbitrary data streams.
-In below examples fopen/getc is used to obtain data. Other alternatives explained here (TBD).
+In examples below fopen/getc are used to obtain data. Other alternatives explained here (TBD).
 
 ## Source code
 
 All CML-related things is always presented in the form of source code (not in obj/lib form).
-I beleive anyone has to have ability to inspect, debug and tailor this code for one projects.
+I beleive anyone has to have ability to inspect, debug and tailor this code for one's projects.
 
 ## How to use CML as config file
 -----------------------------
@@ -132,7 +132,7 @@ d_var *mainCtl_fqdn = d_ref_peek_field(
 	d_lookup_field(d_lookup_type(config, "Controller"), "fqdn"));
 ```
 Where:
-- `d_get_named` returns direct pointer to named struct as `struct_t`
+- `d_get_named` returns the direct pointer to named struct as `struct_t`
 - `d_ref_peek_field` acts as `d_peek_field` but accepts `struct_t` instead of `var_t`
 
 What is the difference between var_t and struct_t.
@@ -141,7 +141,7 @@ What is the difference between var_t and struct_t.
 You can always extract struct_t from var_t by `d_get_ref` call.
 
 ## Cleanup
-If the loaded data is no more needed call `d_dispose_dom(config)`.
+If the loaded data is no longer needed, just call `d_dispose_dom(config)`.
 
 ## See also
 - TBD How to load CML from other sources (memory, std::streams, sockets etc.)
