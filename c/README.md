@@ -143,8 +143,48 @@ You can always extract struct_t from var_t by `d_get_ref` call.
 ## Cleanup
 If the loaded data is no longer needed, just call `d_dispose_dom(config)`.
 
+## Full example
+This code:
+```C++
+#include "dom.h"
+#include "cml_dom_reader.h"
+void on_error(void *context, const char *error, int line_num, int char_pos) {
+   printf("error %s at %s %d:%d\n", error, context, line_num, char_pos);
+}
+int main() {
+   if (FILE *f = fopen("config.cml", "r")) {
+      d_dom *d= cml_read((int(*)(void*))getc, f, on_error, "config.cml");
+      fclose(f);
+      d_type *conf = d_lookup_type(d, "Config");
+      d_var *list = d_peek_field(d_root(d), d_lookup_field(conf, "items"));
+      for (int i = 0; i < d_get_count(list); i++)
+         printf("[%d] = %s\n", i, d_as_str(d_at(list, i), ""));
+      printf("timeout = %d\n", (int)d_as_int(
+         d_peek_field(d_root(d), d_lookup_field(conf, "timeout")),
+         1800));
+      d_dispose_dom(d);
+   }
+}
+```
+Will read this config
+```
+Config
+timeout 44
+items:
+	"Linux"
+	"Windows"
+	"BeeOS"
+```
+And produce this output
+```
+[0] = Linux
+[1] = Windows
+[2] = BeeOS
+timeout = 44
+```
 ## See also
 - TBD How to load CML from other sources (memory, std::streams, sockets etc.)
-- [How to create and modify DOM and write it to CMLs.](https://github.com/karol11/cml/wiki/How-to-create-DOM-and-write-it-to-CMLs-in-C-and-CPP)
-- TBD How to write application data directly to CML in STAX mode bypassing DOM creation.
+- [How to create DOM and write it to CMLs.](https://github.com/karol11/cml/wiki/How-to-create-DOM-and-write-it-to-CMLs-in-C-and-CPP)
+- [How to Read-Modify-Write CMLs](https://github.com/karol11/cml/wiki/How-to-Load-Modify-Write-CML-using-DOM-in-C-and-CPP)
+- [How to write application data directly to CML in STAX mode bypassing DOM creation](https://github.com/karol11/cml/wiki/STAX-Writer-in-C-and-CPP).
 - TBD How to read CML to application structures withoud DOM.
