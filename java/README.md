@@ -56,9 +56,9 @@ What if config file contains other data types?
 
 Using `DomQuery`:
 - `asInt`, `asLong`, `asFloat`, `asDouble`, `asBool` - return other primitive data.
-- `asRaw` returns binary values as buffer ptr and size.
+- `asRaw` returns binary values as byte[].
 - `field(name)` - returns a structure field value.
-- `at(index`, `size()` - access to arrays.
+- `at(index)`, `size()` - access to arrays.
 
 ## Accessing DOM without DomQuery
 ```Java
@@ -75,7 +75,7 @@ Not very handy, but you can always modify CmlStaxReader.error method...
 
 ## Config having structures
 
-This time our config will be looking like this:
+This time our config will look like this:
 ```
 Cloud
 description "Controller + N Compute Topology - x86 KVM"
@@ -97,17 +97,6 @@ It can be accessed this way.
 ```Java
 config = CmlDomReader.read(new FileReader("config.cml"));
 String pass = query(config.root).checkType("Cloud").field("password").asStr("");
-
-// Or without DomQuery
-String pass = "";
-if (config.root instanceof Dom.Struct) {
-  Dom.Struct s = (Dom.Struct) config.root;
-  if (s.type.name.equals("Cloud")) {
-    Object pf = s.get("password");
-    if (pf instanceof String)
-      pass = (String) pf;
-  }
-}
 ```
 Where:
 - `Dom.Struct` - Data type of CML structures. It contains field map, name and type information.
@@ -122,6 +111,18 @@ checks:
 - if this field holds data of string type.
 If any condition fails, `pass` will point to `defVal` parameter of `asStr` which  is "" in this example. 
 
+You can perform it without DomQuery:
+```Java
+String pass = "";
+if (config.root instanceof Dom.Struct) {
+  Dom.Struct s = (Dom.Struct) config.root;
+  if (s.type.name.equals("Cloud")) {
+    Object pf = s.get("password");
+    if (pf instanceof String)
+      pass = (String) pf;
+  }
+}
+```
 ## Access to named objects
 In the above example there is a named object `mainCtl`.
 
@@ -131,7 +132,7 @@ String mainCtlFqdn = query(config.getNamed("mainCtl")).field("fqdn").asStr("");
 ```
 Where `getNamed` returns named struct.
 
-## The Complete Example
+## The Complete Example of Using CML as Config 
 Reading config
 ```
 Config
