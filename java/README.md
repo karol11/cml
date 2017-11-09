@@ -151,5 +151,5 @@ for (DomQuery i: query(d.root).checkType("Config").field("items"))
 ## See also
 - [How to create and modify DOM and write it to CMLs](https://github.com/karol11/cml/wiki/How-to-create-DOM-and-write-it-to-CMLs-in-Java).
 - [How to Load Modify Write CML using DOM in Java](https://github.com/karol11/cml/wiki/How-to-Load-Modify-Write-CML-using-DOM-in-Java).
-- TBD How to write application data directly to CML in STAX mode bypassing DOM creation.
+- [How to write application data directly to CML in STAX mode bypassing DOM creation](https://github.com/karol11/cml/wiki/STAX-Writer-in-Java).
 - TBD How to read CML to application structures withoud DOM.
