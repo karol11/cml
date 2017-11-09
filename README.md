@@ -63,3 +63,6 @@ background# 177                ; <- this field contains binary data
   E74KAACzJwk2n9Hn8PYpoVMG8LjblE8L32dVKg
   FTAUpaY1JLAEuGUmlocDJvkX6PlZZSAWiERgIB
   hIIVEQA7
+```
+Links
+- [Wiki](https://github.com/karol11/cml/wiki)
