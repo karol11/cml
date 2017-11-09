@@ -131,7 +131,25 @@ String mainCtlFqdn = query(config.getNamed("mainCtl")).field("fqdn").asStr("");
 ```
 Where `getNamed` returns named struct.
 
+## The Complete Example
+Reading config
+```
+Config
+timeout 42
+items:
+	"Linux"
+	"Windows"
+	"BeeOS"
+```
+Java code
+```Java
+Dom d = CmlDomReader.read(new FileReader("config.cml"));
+System.out.writeln("timeout is " + query(d.root).checkType("Config").field("timeout").asInt(1800));
+for (DomQuery i: query(d.root).checkType("Config").field("items"))
+   System.out.writeln(i.asStr("unknown"));
+```
 ## See also
-- TBD How to create and modify DOM and write it to CMLs.
+- [How to create and modify DOM and write it to CMLs](https://github.com/karol11/cml/wiki/How-to-create-DOM-and-write-it-to-CMLs-in-Java).
+- [How to Load Modify Write CML using DOM in Java](https://github.com/karol11/cml/wiki/How-to-Load-Modify-Write-CML-using-DOM-in-Java).
 - TBD How to write application data directly to CML in STAX mode bypassing DOM creation.
 - TBD How to read CML to application structures withoud DOM.
