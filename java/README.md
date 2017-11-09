@@ -135,7 +135,7 @@ Where `getNamed` returns named struct.
 ## The Complete Example of Using CML as Config 
 Reading config
 ```
-Config
+MyAppConfig
 timeout 42
 items:
 	"Linux"
@@ -145,8 +145,8 @@ items:
 Java code
 ```Java
 Dom d = CmlDomReader.read(new FileReader("config.cml"));
-System.out.writeln("timeout is " + query(d.root).checkType("Config").field("timeout").asInt(1800));
-for (DomQuery i: query(d.root).checkType("Config").field("items"))
+System.out.writeln("timeout is " + query(d.root).checkType("MyAppConfig").field("timeout").asInt(1800));
+for (DomQuery i: query(d.root).checkType("MyAppConfig").field("items"))
    System.out.writeln(i.asStr("unknown"));
 ```
 ## See also
