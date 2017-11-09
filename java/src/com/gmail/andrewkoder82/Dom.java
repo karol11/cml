@@ -1,5 +1,6 @@
 package com.gmail.andrewkoder82;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -71,10 +72,12 @@ public class Dom {
 	/**
 	 * Returns Dom.StructType by name. If none, creates one.
 	 */
-	public StructType getOrCreateStruct(String name) {
+	public StructType getOrCreateStruct(String name, String... fields) {
 		StructType r = structTypes.get(name);
 		if (r == null)
-			structTypes.put(name, r = new StructType(name));
+			structTypes.put(name, r = new StructType(name, fields));
+		else
+			Collections.addAll(r.fields, fields);
 		return r;
 	}
 	
@@ -101,8 +104,9 @@ public class Dom {
 	}
 
 	public static class StructType {
-		StructType(String name) {
+		StructType(String name, String... fields) {
 			this.name = name;
+			Collections.addAll(this.fields, fields);
 		}
 		
 		public final Set<String> fields = new HashSet<String>();

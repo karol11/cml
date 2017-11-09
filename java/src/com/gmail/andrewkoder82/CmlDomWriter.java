@@ -8,23 +8,43 @@ import java.util.Map;
 
 public class CmlDomWriter {
 	
-	static void write(Dom dom, Writer out) throws IOException {
+	static public void write(Dom dom, Writer out) throws IOException {
 		CmlDomWriter w = new CmlDomWriter(dom, out);
+		w.scan(dom.root);
 		w.traverse(dom.root, null);
 		out.flush();
 	}
 	
 	final Dom dom;
 	final Map<Dom.Struct, String> visited = new HashMap<Dom.Struct, String>();
-	int idNumerator;
+	int idNumerator = 0;
 	CmlStaxWriter out;
 	
-	public CmlDomWriter(Dom dom, Writer out) {
+	CmlDomWriter(Dom dom, Writer out) {
 		this.dom = dom;
 		this.out = new CmlStaxWriter(out);
 	}
+
+	private static final String DOUBLE_ACCESS = "!";
+	private static final String SINGLE_ACCESS = "";
 	
-	public void traverse(Object o, String field) throws IOException {
+	void scan(Object o) {
+		if (o instanceof List<?>) {
+			for (Object i: (List<?>)o)
+				scan(i);			
+		} else if (o instanceof Dom.Struct) {
+			Dom.Struct s = (Dom.Struct) o;
+			String id = visited.get(s);
+			if (id == null) {
+				visited.put(s, SINGLE_ACCESS);
+				for (Map.Entry<String, Object> i: s.fields.entrySet())
+					scan(i.getValue());
+			} else if (id == SINGLE_ACCESS)
+				visited.put(s, DOUBLE_ACCESS);
+		}
+	}
+
+	void traverse(Object o, String field) throws IOException {
 		if (o instanceof Integer)
 			out.writeInt(field, (int)o);
 		else if (o instanceof Long)
@@ -47,11 +67,14 @@ public class CmlDomWriter {
 		} else if (o instanceof Dom.Struct) {
 			Dom.Struct s = (Dom.Struct) o;
 			String id = visited.get(s);
-			if (id != null) {
+			if (id != SINGLE_ACCESS && id != DOUBLE_ACCESS) {
 				out.writeRef(field, id);
 			} else {
-				out.startObject(field, s.type.name, s.name);
-				visited.put(s, s.name == null ? "_" + idNumerator++ : s.name);
+				if (id == SINGLE_ACCESS)
+					id = s.name;
+				else
+					visited.put(s, id = s.name == null ? "_" + ++idNumerator : s.name);
+				out.startObject(field, s.type.name, id);
 				for (Map.Entry<String, Object> i: s.fields.entrySet())
 					traverse(i.getValue(), i.getKey());
 				out.endObject();

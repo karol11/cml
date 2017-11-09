@@ -2,13 +2,30 @@ package com.gmail.andrewkoder82;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class DomQuery implements Iterable<DomQuery> {
+	Object target;
+	static DomQuery dummy = new DomQuery(null);
 
 	static DomQuery query(Object target) {
 		return target == null ? dummy : new DomQuery(target);
 	}
-	
+
+	public boolean isUndefined() { return this == dummy; }
+	public boolean isInt() { return target instanceof Integer || target instanceof Long; }
+	public boolean isFloat() { return target instanceof Float || target instanceof Double; }
+	public boolean isString() { return target instanceof String; }
+	public boolean isArray() { return target instanceof List<?>; }
+	public boolean isRef() { return target == null || target instanceof Dom.Struct; }
+	public boolean isStruct() { return target instanceof Dom.Struct; }
+	public boolean isBool() { return target instanceof Boolean; }
+	public boolean isBin() { return target instanceof byte[]; }
+
+	DomQuery(Object target) {
+		this.target = target;
+	}
+
 	public DomQuery field(String field) {
 		return target instanceof Dom.Struct ? query(((Dom.Struct)target).get(field)) : dummy;
 	}
@@ -199,13 +216,30 @@ public class DomQuery implements Iterable<DomQuery> {
 			public DomQuery next() { return dummy; }			
 		};
 	}
-	
-	
-	DomQuery(Object target) {
-		this.target = target;
+		
+	Iterable<Field> fields() {
+		return new Iterable<Field> () {
+			@Override public Iterator<Field> iterator() {
+				return target != null && target instanceof Dom.Struct ? 
+					new Iterator<Field>(){
+						Iterator<Map.Entry<String, Object>> i = ((Dom.Struct)target).fields.entrySet().iterator();
+						@Override public boolean hasNext() { return i.hasNext(); }
+						@Override public Field next() { return new Field(i.next()); }
+					} :
+					new Iterator<Field> (){
+						@Override public boolean hasNext() { return false;}
+						@Override public Field next() { return null; }
+					};
+			}
+		};
+		
 	}
-	Object target;
-
-
-	static DomQuery dummy = new DomQuery(null);
+	public static class Field{
+		final Map.Entry<String, Object> e;
+		Field(Map.Entry<String, Object> e) {
+			this.e = e;
+		}
+		public String getField() { return e.getKey(); }
+		public DomQuery getValue() { return new DomQuery(e.getValue()); }
+	};
 }
