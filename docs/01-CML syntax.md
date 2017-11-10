@@ -1,12 +1,26 @@
-CML lexical rules
------------------
+##CML lexical rules
 - CML is a UTF8-encoded text file.
 - it can have four line endings \r | \n | \r\n | \n\r
 - indentation can be performed with spaces or tabs
 - all file have to have identical identation.
 
-BNF
----
+## Informal definition
+- *Integer* - Signed decimal format: -1, 0, 44.
+- *Floating point* - Exponential and simple form: 0.1, -10.5e-14.
+- *Boolean* - `+` or `-`
+- *String* - "Quoted" having \\ \" and \uXXXX escapes.
+- *Array* - `:` followed by optional array size and indented array items.
+- *Structure* - Type_name followed by optional `.` and instance id and a field list.
+   - If structure nested in a field of another structure, fields are indented.
+   - If structure is an array item (not the last array item), it ended with an empty line. This increases complexity, but makes file look more intuitive.
+- *Cross reference* - `-` followed by object id.
+  - Object id == `_` - is a null reference
+  - Id starting with `_` are local ids for this CML file, they may not be visible in loaded DOM.
+  - All local ids refers to a structure early defined in this CML file.
+  - Non-local id can be defined in this file (exports) or can be imported from already existing DOM.
+- *Binary data* - `#` followed by mandatory bytes-count and indented data in base-64 format.
+
+## BNF
 
 ```BNF
 cml_file = : last_array_item
