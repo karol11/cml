@@ -13,7 +13,7 @@
 - *Structure* - Type_name followed by optional `.` and instance id and a field list.
    - If structure nested in a field of another structure, fields are indented.
    - If structure is an array item (not the last array item), it ended with an empty line. This increases complexity, but makes file look more intuitive.
-- *Cross reference* - `-` followed by object id.
+- *Cross reference* - `=` followed by object id.
   - Object id == `_` - is a null reference
   - Id starting with `_` are local ids for this CML file, they may not be visible in loaded DOM.
   - All local ids refers to a structure early defined in this CML file.
