@@ -15,7 +15,7 @@ struct cml_stax_writer_tag {
 
 static int put_s(cml_stax_writer *w, const char *s) {
 	if (w->in_error)
-		return w->in_error = CMLW_WRITE_AFTER_ERROR;
+		return w->in_error;
 	while (*s) {
 		if (!w->putc(w->putc_context, *s++))
 			return w->in_error = CMLW_PUTC_ERROR;
@@ -25,13 +25,13 @@ static int put_s(cml_stax_writer *w, const char *s) {
 
 static int put_c(cml_stax_writer *w, char c) {
 	return
-		w->in_error ? w->in_error = CMLW_WRITE_AFTER_ERROR :
+		w->in_error ? w->in_error:
 		w->putc(w->putc_context, c) ? 0 : (w->in_error = CMLW_PUTC_ERROR);
 }
 
 static int write_indent(cml_stax_writer *w, int i) {
 	if (w->in_error)
-		return w->in_error = CMLW_WRITE_AFTER_ERROR;
+		return w->in_error;
 	while (--i) {
 		if (!w->putc(w->putc_context, '\t'))
 			return w->in_error = CMLW_PUTC_ERROR;

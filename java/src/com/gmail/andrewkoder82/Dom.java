@@ -3,6 +3,7 @@ package com.gmail.andrewkoder82;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,6 +112,9 @@ public class Dom {
 		
 		public final Set<String> fields = new HashSet<String>();
 		public final String name;
+		public Dom.Struct make() {
+			return new Dom.Struct(this);
+		}
 	}
 
 	public static class Struct{

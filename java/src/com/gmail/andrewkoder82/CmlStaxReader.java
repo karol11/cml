@@ -17,7 +17,7 @@ public class CmlStaxReader {
 	static public final int R_BOOL = 7;
 	static public final int R_DOUBLE = 8;
 	static public final int R_BINARY = 9;
-	static public final int R_EOF = 9;
+	static public final int R_EOF = 10;
 
 	Reader in;
 	boolean wasIndented;

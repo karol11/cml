@@ -3,6 +3,10 @@
 
 #include "cml_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct cml_stax_writer_tag cml_stax_writer;
 
 cml_stax_writer *cmlw_create(
@@ -14,8 +18,7 @@ void cmlw_dispose(cml_stax_writer *);
 enum cmlw_error_codes {
 	CMLW_PUTC_ERROR = -1,
 	CMLW_UNEXPECTED_FIELD = -2,
-	CMLW_WRITE_AFTER_ERROR = -3,
-	CMLW_UNPAIRED_END = -4,
+	CMLW_UNPAIRED_END = -3,
 };
 
 int cmlw_int(cml_stax_writer *writer, const char *field, long long value);
@@ -30,6 +33,10 @@ int cmlw_ref(cml_stax_writer *writer, const char *field, const char *id);
 
 #ifdef CONFIG_CML_FLOATINGPOINT
 int cmlw_double(cml_stax_writer *writer, const char *field, double value);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
