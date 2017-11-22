@@ -1,4 +1,5 @@
 ## How to use CML in C
+In C++ you can use [more convenient API](https://github.com/karol11/cml/wiki/Using-CML-DOM-in-CPP)
 
 CML C library contents:
 
