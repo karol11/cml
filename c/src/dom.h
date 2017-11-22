@@ -85,6 +85,12 @@ d_field *d_add_field(d_type *type, const char *field_name);
 const char *d_field_name(d_field *field);
 
 //
+// Returns the struct type this field belongs to.
+// Pointer is valid till d_dispose_dom called.
+//
+d_type *d_field_struct(d_field *field);
+
+//
 // Iterating all fields of given type:
 // for (d_field *f = d_enumerate_fields(type); f; f = d_next_field(f))...
 // You should not add fields during iterations, because it can alter the iteration sequence.
@@ -177,6 +183,10 @@ cml_inline void d_set_str(d_var *dst, d_dom *dom, const char *val) {
 	d_set_str_ref(dst, d_make_str(dom, val));
 }
 
+cml_inline const char *d_c_str(d_str *ref) {
+	return (const char *) ref;
+}
+
 //
 // Returns a string value of given node if it is CMLD_STR or
 // def_val otherwise.
@@ -204,17 +214,33 @@ void d_set_binary(d_var *dst, d_dom *dom, char *data, int size);
 // If the size is non-zero, the new array is filled with CMLD_UNDEFINED nodes.
 // Returns dst.
 //
-d_var *d_set_array(d_var *dst, d_dom *dom, int size);
+typedef struct d_array_tag d_array;
+
+d_array *d_make_array(d_dom *dom, int size);
+d_var *d_ref_set_array(d_var *dst, d_array *val);
+d_array *d_ref_get_arr(d_var *arr);
+
+cml_inline d_var *d_set_array(d_var *dst, d_dom *dom, int size) {
+	return d_ref_set_array(dst, d_make_array(dom, size));
+}
 
 //
 // Returns array size for CMLD_ARRAY nodes or 0 otherwise.
 //
-int d_get_count(d_var *array);
+int d_ref_get_count(d_array *arr);
+
+cml_inline int d_get_count(d_var *array) {
+	return d_ref_get_count(d_ref_get_arr(array));
+}
 
 //
 // Returns the indexed array item. Or NULL for non-arrays.
 //
-d_var *d_at(d_var *array, int index);
+d_var *d_ref_at(d_array *array, int index);
+
+cml_inline d_var *d_at(d_var *array, int index) {
+	return d_ref_at(d_ref_get_arr(array), index);
+}
 
 //
 // Resizes array, adding 'count' items starting at 'at' index.
@@ -223,15 +249,22 @@ d_var *d_at(d_var *array, int index);
 // d_insert invalidates all d_var pointers to array items.
 // 'at' index should be within the range of array indexes.
 //
-int d_insert(d_var *array, d_dom *dom, int at, int count);
+int d_ref_insert(d_array *array, d_dom *dom, int at, int count);
+
+cml_inline int d_insert(d_var *array, d_dom *dom, int at, int count) {
+	return d_ref_insert(d_ref_get_arr(array), dom, at, count);
+}
 
 //
 // Deletes 'count' items starting at 'at' index.
 // Invalidates all d_var pointers to array items.
 // 'at' and 'at+count' indexes should be in the range of array indexes.
 //
-void d_delete(d_var *array, d_dom *dom, int at, int count);
+void d_ref_delete(d_array *array, int at, int count);
 
+cml_inline void d_delete(d_var *array, int at, int count) {
+	d_ref_delete(d_ref_get_arr(array), at, count);
+}
 
 //
 // --------------- Data Manipulation Routines for Structures ----------

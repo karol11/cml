@@ -3,9 +3,6 @@
 #include "cml_config.h"
 #include "dom.h"
 
-typedef struct d_struct_tag d_struct;
-typedef struct d_array_tag d_array;
-
 struct d_var_tag {
 	int type;
 	union{
@@ -59,7 +56,7 @@ struct d_dom_tag {
 	d_type *types;
 };
 
-struct d_str {
+struct d_str_tag {
 	char val_length[1];
 };
 
@@ -104,7 +101,7 @@ static int array_insert(d_array *a, d_dom *dom, int at, int count) {
 	return at;
 }
 
-static void array_delete(d_array *a, d_dom *dom, int at, int count) {
+static void array_delete(d_array *a, int at, int count) {
 	memmove(a->items + at, a->items + at + count, (a->size - at - count) * sizeof(d_var));
 	a->size -= count;
 }
@@ -209,6 +206,9 @@ const char *d_field_name(d_field *field) {
 	return field ? field->name : 0;
 }
 
+d_type *d_field_struct(d_field *field) {
+	return field ? field->type : 0;
+}
 
 d_type *d_ref_get_type(d_struct *s) {
 	return s ? s->type : 0;
@@ -232,14 +232,18 @@ d_var *d_ref_get_field(d_struct *s, d_field *field) {
 	return s->fields.items + field->index;
 }
 
-d_var *d_at(d_var *s, int index) {
-	return s && s->type == CMLD_ARRAY && index < s->array_val->size ?
-		s->array_val->items + index :
+d_var *d_ref_at(d_array *s, int index) {
+	return s && index < s->size ?
+		s->items + index :
 		0;
 }
 
-int d_get_count(d_var *s) {
-	return s && s->type == CMLD_ARRAY ? s->array_val->size : 0;
+d_array *d_ref_get_arr(d_var *arr) {
+	return arr && arr->type == CMLD_ARRAY ? arr->array_val : 0;
+}
+
+int d_ref_get_count(d_array *arr) {
+	return arr ? arr->size : 0;
 }
 
 long long d_as_int(d_var *v, long long def_val) {
@@ -297,13 +301,18 @@ void d_set_str_ref(d_var *dst, d_str *ref) {
 	}
 }
 
-d_var *d_set_array(d_var *dst, d_dom *dom, int size) {
+d_array *d_make_array(d_dom *dom, int size) {
+	d_array *r = (d_array*) d_alloc(dom, sizeof(d_array));
+	init_array(r);
+	if (size > 0)
+		array_insert(r, dom, 0, size);
+	return r;
+}
+
+d_var *d_ref_set_array(d_var *dst, d_array *val) {
 	if (dst) {
 		dst->type = CMLD_ARRAY;
-		dst->array_val = (d_array*) d_alloc(dom, sizeof(d_array));
-		init_array(dst->array_val);
-		if (size > 0)
-			array_insert(dst->array_val, dom, 0, size);
+		dst->array_val = val;
 	}
 	return dst;
 }
@@ -422,19 +431,19 @@ void d_ref_set_name(d_struct *target, const char *name) {
 				if (old != target) {
 					target->name = old->name;
 					old->name = 0;
-					array_delete(&dom->named, dom, old_name_bind, 1);
+					array_delete(&dom->named, old_name_bind, 1);
 				}
 			}
 		}
 	}
 }
 
-int d_insert(d_var *arr, d_dom *dom, int at, int count) {
-	return arr && arr->type == CMLD_ARRAY ? array_insert(arr->array_val, dom, at, count) : -1;
+int d_ref_insert(d_array *arr, d_dom *dom, int at, int count) {
+	return arr ? array_insert(arr, dom, at, count) : -1;
 }
-void d_delete(d_var *arr, d_dom *dom, int at, int count) {
-	if (arr && arr->type == CMLD_ARRAY)
-		array_delete(arr->array_val, dom, at, count);
+void d_ref_delete(d_array *arr, int at, int count) {
+	if (arr)
+		array_delete(arr, at, count);
 }
 
 static int gc_visited(void *block) {

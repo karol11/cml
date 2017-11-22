@@ -48,7 +48,7 @@ static const char *parse_var(d_var *v, d_dom *d, cml_stax_reader *r, int type) {
 				d_set_array(v, d,  0);
 			else {
 				d_set_array(v, d,  s);
-				d_delete(v, d, 0, s);				
+				d_delete(v, 0, s);
 			}
 		}
 		for (;;) {
