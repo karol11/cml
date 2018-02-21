@@ -1,7 +1,7 @@
 #include "cml_config.h"
 #include "utf8.h"
 
-int get_utf8(int (*get_fn)(void *context), void *get_fn_context)
+static int get_utf8_no_surrogates(int (*get_fn)(void *context), void *get_fn_context)
 {
 	int r, n;
 restart_and_reload:
@@ -27,15 +27,25 @@ restart:
 		}
 		r = r << 6 | (c & 0x3f);
 	}
-	while (r >= 0xD800 && r <= 0xDBFF) { // it's ill-formed surrogate from utf16->utf8
-		int low_part = get_utf8(get_fn_context, get_fn);
-		if (low_part < 0xDC00 || low_part > 0xDFFF)
-			r = low_part; // bad utf16 sequence
+	return r;
+}
+
+int get_utf8(int (*get_fn)(void *context), void *get_fn_context)
+{
+	int r = get_utf8_no_surrogates(get_fn, get_fn_context);
+	for (;;) {
+		if (r < 0xD800 || r > 0xDFFF)
+			return r;
+		else if (r > 0xDBFF) // second part without first
+			r = get_utf8_no_surrogates(get_fn, get_fn_context);
 		else {
-			return ((r & 0x3ff) << 10 | (low_part & 0x3ff)) | 0x10000;
+			int low_part = get_utf8_no_surrogates(get_fn, get_fn_context);
+			if (low_part < 0xDC00 || low_part > 0xDFFF)
+				r = low_part; // bad second part, restart
+			else
+				return ((r & 0x3ff) << 10 | (low_part & 0x3ff)) + 0x10000;
 		}
 	}
-	return r;
 }
 
 int put_utf8(int v, int (*put_fn)(void *context, char ch), void *put_fn_context)
