@@ -5,16 +5,16 @@
 
 struct d_var_tag {
 	int type;
-	union{
+	union {
 		long long int_val;
 		int bool_val;
 		const char *str_val;
 		d_struct *struct_val;
 		d_array *array_val;
 		struct{
-			char *bin_val;
-			int bin_size;
-		};
+			char *val;
+			int size;
+		} bin;
 #ifdef CONFIG_CML_FLOATINGPOINT
 		double dbl_val;
 #endif
@@ -266,17 +266,17 @@ char *d_as_binary(d_var *v, int *out_size) {
 	if (!v || v->type != CMLD_BINARY)
 		return 0;
 	if (out_size)
-		*out_size = v->bin_size;
-	return v->bin_val;
+		*out_size = v->bin.size;
+	return v->bin.val;
 }
 
 void d_set_binary(d_var *dst, d_dom *dom, char *data, int size) {
 	if (dst) {
 		dst->type = CMLD_BINARY;
-		dst->bin_size = size;
-		dst->bin_val = d_alloc(dom, size);
+		dst->bin.size = size;
+		dst->bin.val = d_alloc(dom, size);
 		if (data)
-			memcpy(dst->bin_val, data, size);
+			memcpy(dst->bin.val, data, size);
 	}
 }
 
@@ -460,7 +460,7 @@ static void mark(d_var *i) {
 		gc_visited((void*) i->str_val);
 		break;
 	case CMLD_BINARY:
-		gc_visited((void*) i->bin_val);
+		gc_visited((void*) i->bin.val);
 		break;
 	case CMLD_ARRAY:
 		if (!gc_visited(i->array_val)) {
