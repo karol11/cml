@@ -20,7 +20,7 @@ Where
 - `source` - string containig data in CML format.
 - `factory`
   - If function, it is called for each structure. It receives type name and returns object instance.
-  - If string, a object `{}` is created, and `factory` string becomes the field name storing type.
+  - If string, an object `{}` is created, and this string becomes the field name, that stores the type name.
 - `name_map`
   - If Map, it is used to resolve external names, and filled with new names.
   - If undefined, no names exported and imported.
@@ -35,11 +35,11 @@ boolean | boolean
 "string" | "string"
 `:` array | `[]` array
 `#` binary | ArrayBuffer
-Struct | resulrt of `factory` function or `{}` Object having `factory` field
+Struct | result of the `factory` function, or the `{}` Object, having `factory` field
 
 Unlike JSON.parse function cml.parse can return non-tree data structure. Because CML file can contain cross references.
 
-On parsing errors throws
+On parsing errors it throws:
 ```
 {
   "type": "error",
@@ -64,12 +64,12 @@ Where
 - `rootObject` - Root object to be written to CML.
 - `typer`
   - If function, it is called for each structure. It receives object to be written and returns its type name.
-  - If string, it defines a field name storing type (this field itself gets excluded from serialization).
+  - If string, it defines a field name that will be used to acquire the type name (this field itself will be excluded from serialization).
 - `name_map`
   - If Map, it is used to resolve external names, and filled with new names.
   - If undefined, no names exported and imported.
 
-Returns string with CML encoded data.
+It returns the string with CML-encoded data.
 
 ## Examples
 cml/javascript/func_test_index.html
