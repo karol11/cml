@@ -1,11 +1,11 @@
 Page
 items:
 	Page.header
-	align 1
+	align top
 	size 20
 	items:
 		Image.logo
-		align 2
+		align left
 		size 20
 		url "logo.gif"
 
