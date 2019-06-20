@@ -109,6 +109,7 @@ class type {
   type(d_type *t) : t(t) {}
 
  public:
+  const char* name() { return d_type_name(t); }
   field operator()(const char *field_name) {
     return field(d_add_field(t, field_name));
   }
