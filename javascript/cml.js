@@ -265,8 +265,8 @@ var cml = (function(){
 			var typeNumerator = 0;
 			var revNames = new Map();
 			if (names) {
-				for (var i in names)
-					revNames.set(names.get(i), i);				
+				for (const i of names)
+					revNames.set(i[1], i[0]);
 			}
 			var visited = new Map(); // undefined = not visited, 0 = referenced once, >0 referenced twice+ =id, <0 written abs() = id
 			var idNumerator = 0;
@@ -276,11 +276,14 @@ var cml = (function(){
 						scan(v[i]);
 				} else if (typeof v === "object") {
 					var id = visited.get(v);
-					visited.set(v, id === undefined ? 0 : ++idNumerator);
-					for (var field in v) {
-					   if (v.hasOwnProperty(field) && field != "prototype")
-						  scan(v[field]);
-					}					
+					id = id === undefined ? 0 : ++idNumerator;
+					visited.set(v, id);
+					if (id == 0) {
+						for (var field in v) {
+							if (v.hasOwnProperty(field) && field != "prototype")
+							   scan(v[field]);
+						}
+					}
 				}
 			}
 			function getId(id, v) {
