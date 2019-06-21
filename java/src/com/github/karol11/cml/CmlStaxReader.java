@@ -304,7 +304,7 @@ public class CmlStaxReader {
 		boolean hasFractionPart = match('.');
 		double frac = r;
 		if (hasFractionPart) {
-			for (double p = 0.1; isDigit(cur); r *= 0.1, nextChar())
+			for (double p = 0.1; isDigit(cur); p *= 0.1, nextChar())
 				frac += p * (cur - '0');
 		}
 		if (match('e') || match('E')) {
