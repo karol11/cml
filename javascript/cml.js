@@ -113,19 +113,14 @@ var cml = (function(){
 			}
 			function parseNum(sign) {
 				var r = parseInt();
-				var hasFractionPart = match(0x2e);//'.'
-				var frac = r + 0.0;
-				if (hasFractionPart) {
-					for (var p = 0.1; isDigit(cur); r *= 0.1, nextChar())
-						frac += p * (cur - 0x30); // '0'
+				if (match(0x2e)) {  // '.'
+					for (var p = 0.1; isDigit(cur); p *= 0.1, nextChar())
+						r += p * (cur - 0x30); // '0'
 				}
 				if (match(0x65) || match(0x45)) { //Ee
-					hasFractionPart = true;
-					frac = frac * Math.pow(10, (match(0x2d) ? -1 : 1) * parseInt()); //'-'
+					r *= Math.pow(10, (match(0x2d) ? -1 : 1) * parseInt()); //'-'
 				}
 				expectedNewLine();
-				if (hasFractionPart)
-					return frac * sign;
 				return r * sign;
 			}
 			function nextHex() {
