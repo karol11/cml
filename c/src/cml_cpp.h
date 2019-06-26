@@ -109,7 +109,7 @@ class type {
   type(d_type *t) : t(t) {}
 
  public:
-  const char* name() { return d_type_name(t); }
+  const char *name() { return d_type_name(t); }
   field operator()(const char *field_name) {
     return field(d_add_field(t, field_name));
   }
@@ -192,6 +192,7 @@ class var {
   int size() { return d_get_count(v); }
   array_iterator begin() { return array_iterator(d_ref_get_arr(v), 0); }
   array_iterator end() { return array_iterator(nullptr, d_get_count(v)); }
+  void operator=(const var&) = delete;
 };
 
 template <typename VAL>
