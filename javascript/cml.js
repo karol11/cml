@@ -248,7 +248,7 @@ var cml = (function(){
 					names.set(id, r);
 				while (!wasEmptyLine && indentPos > effectiveIndent)
 					r[getId("field")] = parseNode(false);
-				if (indentPos == objectIndent)
+				if (indentPos == objectIndent && inArray)
 					wasEmptyLine = false;
 				return r;
 			}
@@ -283,7 +283,7 @@ var cml = (function(){
 			}
 			function getId(id, v) {
 				var n = revNames.get(v);
-				return n === undefined && id != 0 ? '$' + Math.abs(id) : n;
+				return n === undefined && id != 0 ? '_' + Math.abs(id) : n;
 			}
 			function code2char(c) {
 				c &= 0x3f;
