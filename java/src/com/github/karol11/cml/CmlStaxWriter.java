@@ -5,7 +5,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CmlStaxWriter {	
+public class CmlStaxWriter {
+	static final String INDENT = "\t";	
 	boolean inArray = true;
 	boolean blankLineNeeded = false;
 	String indent = "";
@@ -23,7 +24,7 @@ public class CmlStaxWriter {
 			out.append('.').append(id);
 		out.append('\n');
 		if (!inArray)
-			indent += "\t";	
+			indent += INDENT;	
 		pushState(false);
 	}
 
@@ -32,7 +33,7 @@ public class CmlStaxWriter {
 		if (inArray)
 			blankLineNeeded = true;
 		else
-			indent = indent.substring(1);
+			indent = indent.substring(INDENT.length());
 	}
 	public void startArray(String field, int size) throws IOException {
 		addPrefix(field);
@@ -41,12 +42,12 @@ public class CmlStaxWriter {
 			out.append(Integer.toString(size));
 		out.append('\n');
 		pushState(true);
-		indent += "\t";
+		indent += INDENT;
 	}
 	public void endArray() {
 		blankLineNeeded = false;
 		popState();
-		indent = indent.substring(1);
+		indent = indent.substring(INDENT.length());
 	}
 	public void writeInt(String field, long val) throws IOException {
 		addPrefix(field);
@@ -102,7 +103,7 @@ public class CmlStaxWriter {
 		int perRow = 1;
 		for (; length >= 3; length -= 3, at += 3) {
 			if (--perRow == 0) {
-				out.append('\n').append(indent).append('\t');
+				out.append('\n').append(indent).append(INDENT);
 				perRow = 32;
 			}
 			int a = val[at] & 0xff;
