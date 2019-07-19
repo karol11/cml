@@ -21,7 +21,7 @@ static const char *extract_id(d_var *v, char *id_buf) {
 }
 
 struct cml_stax_writer_data {
-	char id_buf[10];
+	char id_buf[18];
 	cml_stax_writer *w;
 };
 
