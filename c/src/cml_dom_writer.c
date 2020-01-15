@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "cml_config.h"
 #include "cml_stax_writer.h"
-#include "dom.h"
+#include "cml_dom.h"
 #include "cml_dom_writer.h"
 
 enum node_states {

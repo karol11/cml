@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cml_config.h"
-#include "dom.h"
+#include "cml_dom.h"
 
 struct d_var_tag {
 	int type;
@@ -60,7 +60,7 @@ struct d_str_tag {
 	char val_length[1];
 };
 
-static void *d_alloc(d_dom *dom, int size) {
+static void *d_alloc(d_dom *dom, size_t size) {
 	void **r = (void**) malloc(size + sizeof(void*));
 	*r = dom->allocated;
 	dom->allocated = (void*) r;

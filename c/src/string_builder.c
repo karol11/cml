@@ -20,8 +20,8 @@ void sb_clear(string_builder *b) {
 
 void sb_grow(string_builder *b, size_t delta) {
 	if (b->pos + delta >= b->end) {
-		int old_size = b->pos - b->start;
-		int new_size = old_size + delta;
+		size_t old_size = b->pos - b->start;
+		size_t new_size = old_size + delta;
 		char *new_data = malloc(new_size);
 		memcpy(new_data, b->start, old_size);
 		free(b->start);
@@ -44,10 +44,10 @@ void sb_puts(string_builder *b, const char *s) {
 	b->pos += size;
 }
 
-int sb_size(string_builder *b) {
+size_t sb_size(string_builder *b) {
 	return b->pos - b->start;
 }
-void sb_trunc(string_builder *b, int size) {
-	if (size < b->pos - b->start)
+void sb_trunc(string_builder *b, size_t size) {
+	if (size < (size_t)(b->pos - b->start))
 		b->pos = b->start + size;
 }

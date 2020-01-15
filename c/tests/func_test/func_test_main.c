@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../../src/dom.h"
+#include "../../src/cml_dom.h"
 #include "../../src/cml_dom_writer.h"
 #include "../../src/cml_dom_reader.h"
 #include "../../src/string_builder.h"

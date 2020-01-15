@@ -4,7 +4,7 @@ CCFLAGS=-Wall -O3 -DTESTS -DCONFIG_LIBC_FLOATINGPOINT
 TARGET=test
 SRCS=\
 	tests-main.c\
-	../../src/dom.c\
+	../../src/cml_dom.c\
 	../../src/string_builder.c\
 	../../src/cml_stax_reader.c\
 	../../src/cml_dom_reader.c\

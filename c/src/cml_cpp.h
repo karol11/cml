@@ -25,7 +25,7 @@ class arr {
   template <typename A>
   arr &operator+(const A &a);
 
-  int size() { return d_ref_get_count(a); }
+  int size() const { return d_ref_get_count(a); }
 };
 
 class str {
@@ -35,8 +35,8 @@ class str {
   str(d_str *s) : s(s) {}
 
  public:
-  operator const char *() { return d_c_str(s); }
-  const char *c_str() { return d_c_str(s); }
+  operator const char *() const { return d_c_str(s); }
+  const char *c_str() const { return d_c_str(s); }
 };
 
 class field_val_iterator {
@@ -47,8 +47,8 @@ class field_val_iterator {
   explicit field_val_iterator(d_struct *s, d_field *f) : f(f), s(s) {}
 
  public:
-  bool operator==(const field_val_iterator &other) { return f == other.f; }
-  bool operator!=(const field_val_iterator &other) { return f != other.f; }
+  bool operator==(const field_val_iterator &other) const { return f == other.f; }
+  bool operator!=(const field_val_iterator &other) const { return f != other.f; }
   field_val_iterator &operator++() {
     f = d_next_field(f);
     return *this;
@@ -60,25 +60,30 @@ class struc {
   friend class type;
   friend class var;
   friend class dom;
+  friend std::hash<struc>;
   d_struct *s;
   struc(d_struct *s) : s(s) {}
 
  public:
+  static struc null() { return struc(nullptr); }
   template <typename VAL>
   struc &operator()(const field &f, const VAL &val);
 
   template <typename VAL>
   struc &operator()(const char *f_name, const VAL &val);
 
-  const char *get_name() { return d_ref_get_name(s); }
+  const char *get_name() const { return d_ref_get_name(s); }
   void set_name(const char *name) { d_ref_set_name(s, name); }
 
-  type type();
+  type type() const;
+  size_t get_tag() const { return d_ref_get_tag(s); }
+  void set_tag(size_t val) { d_ref_set_tag(s, val); }
 
   field_val_iterator begin() {
     return field_val_iterator(s, d_enumerate_fields(d_ref_get_type(s)));
   }
   field_val_iterator end() { return field_val_iterator(s, nullptr); }
+  bool operator== (const struc& b) const { return s == b.s; }
 };
 
 class field {
@@ -88,43 +93,47 @@ class field {
   friend class field_iterator;
   friend class type;
   friend class field_val_iterator;
+  friend struct std::hash<field>;
   d_field *f;
   field(d_field *f) : f(f) {}
 
  public:
-  const char *name();
+  const char *name() const { return d_field_name(f); }
   field &operator++() {
     f = d_next_field(f);
     return *this;
   }
   field operator*() { return *this; }
-  bool operator==(const field &other) { return f == other.f; }
-  bool operator!=(const field &other) { return f != other.f; }
+  bool operator==(const field &other) const { return f == other.f; }
+  bool operator!=(const field &other) const { return f != other.f; }
 };
 
 class type {
   friend class dom;
   friend class struc;
+  friend std::hash<type>;
   d_type *t;
   type(d_type *t) : t(t) {}
 
  public:
-  const char *name() { return d_type_name(t); }
+  const char *name() const { return d_type_name(t); }
   field operator()(const char *field_name) {
     return field(d_add_field(t, field_name));
   }
-  field operator>>(const char *field_name) {
+  field operator>>(const char *field_name) const {
     return field(d_lookup_field(t, field_name));
   }
 
-  struc operator()() { return struc(d_make_struct(t)); }
+  struc operator()() const { return struc(d_make_struct(t)); }
 
   template <typename FIELD, typename VAL>
-  struc operator()(const FIELD &field, const VAL &val) {
+  struc operator()(const FIELD &field, const VAL &val) const {
     return struc(d_make_struct(t))(field, val);
   }
   field begin() { return field(d_enumerate_fields(t)); }
   field end() { return field(nullptr); }
+  bool operator==(const type &other) const { return t == other.t; }
+  bool operator!=(const type &other) const { return t != other.t; }
 };
 
 class array_iterator {
@@ -134,8 +143,8 @@ class array_iterator {
   array_iterator(d_array *arr, int i) : arr(arr), i(i) {}
 
  public:
-  bool operator==(const array_iterator &other) { return i == other.i; }
-  bool operator!=(const array_iterator &other) { return i != other.i; }
+  bool operator==(const array_iterator &other) const { return i == other.i; }
+  bool operator!=(const array_iterator &other) const { return i != other.i; }
   array_iterator &operator++() {
     i++;
     return *this;
@@ -154,27 +163,27 @@ class var {
 
  public:
   var() : v(0) {}
-  double operator()(double def) { return d_as_double(v, def); }
+  double operator()(double def) const { return d_as_double(v, def); }
   double operator=(double val) {
     d_set_double(v, val);
     return val;
   }
-  long long operator()(long long def) { return d_as_int(v, def); }
+  long long operator()(long long def) const { return d_as_int(v, def); }
   long long operator=(long long val) {
     d_set_int(v, val);
     return val;
   }
-  int operator()(int def) { return static_cast<int>(d_as_int(v, def)); }
+  int operator()(int def) const { return static_cast<int>(d_as_int(v, def)); }
   int operator=(int val) {
     d_set_int(v, val);
     return val;
   }
-  bool operator()(bool def) { return d_as_bool(v, def ? 1 : 0) != 0; }
+  bool operator()(bool def) const { return d_as_bool(v, def ? 1 : 0) != 0; }
   bool operator=(bool val) {
     d_set_bool(v, val);
     return val;
   }
-  struc operator*() { return struc(d_get_ref(v)); }
+  struc operator*() const { return struc(d_get_ref(v)); }
   struc operator=(struc val) {
     d_set_ref(v, val.s);
     return val;
@@ -183,7 +192,7 @@ class var {
     d_ref_set_array(v, val.a);
     return val;
   }
-  const char *operator()(const char *def) { return d_as_str(v, def); }
+  const char *operator()(const char *def) const { return d_as_str(v, def); }
   void operator=(str val) { d_set_str_ref(v, val.s); }
   void operator=(const char *str_should_be_created_by_dom) = delete;
 
@@ -193,6 +202,7 @@ class var {
   array_iterator begin() { return array_iterator(d_ref_get_arr(v), 0); }
   array_iterator end() { return array_iterator(nullptr, d_get_count(v)); }
   void operator=(const var&) = delete;
+  int kind() { return d_kind(v); }
 };
 
 template <typename VAL>
@@ -207,7 +217,7 @@ struc &struc::operator()(const char *f_name, const VAL &val) {
   return *this;
 }
 
-type struc::type() { return cml::type(d_ref_get_type(s)); }
+type struc::type() const { return cml::type(d_ref_get_type(s)); }
 
 var array_iterator::operator*() { return var(d_ref_at(arr, i)); }
 
@@ -270,6 +280,8 @@ class dom {
   cml::str str(const char *val) { return cml::str(d_make_str(d, val)); }
   cml::arr arr(int size = 0) { return cml::arr(d_make_array(d, size), d); }
 
+  operator var () { return var(d_root(d)); }
+  void untag() { d_untag(d_root(d)); }
   void write(std::ostream &s) { cml_write(d, os_put_c, &s); }
 
  private:
@@ -284,5 +296,36 @@ inline arr &arr::operator+(const VAL &val) {
 }
 
 }  // namespace cml
+
+namespace std {
+
+template<>
+struct hash<cml::field> {
+  typedef cml::field argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const& val) const noexcept {
+    return std::hash<void*>{}(((void*)val.f));
+  }
+};
+
+template<>
+struct hash<cml::type> {
+  typedef cml::type argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const& val) const noexcept {
+    return std::hash<void*>{}(((void*)val.t));
+  }
+};
+
+template<>
+struct hash<cml::struc> {
+  typedef cml::struc argument_type;
+  typedef std::size_t result_type;
+  result_type operator()(argument_type const& val) const noexcept {
+    return std::hash<void*>{}(((void*)val.s));
+  }
+};
+
+}  // namespace std
 
 #endif

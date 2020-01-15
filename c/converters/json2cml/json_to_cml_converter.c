@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "../../src/dom.h"
+#include "../../src/cml_dom.h"
 #include "../../src/string_builder.h"
 #include "../../src/utf8.h"
 #include "../../src/cml_dom_writer.h"

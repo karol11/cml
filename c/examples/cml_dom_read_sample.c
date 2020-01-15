@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "dom.h"
+#include "cml_dom.h"
 #include "cml_dom_reader.h"
 
 int getc_asciiz(void *ctx) {

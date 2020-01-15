@@ -107,7 +107,7 @@ static int is_digit(int c) {
 }
 
 static int is_id_letter(int c) {
-	return is_first_id_letter(c) || is_digit(c);
+	return (c & 0xff) > ' ' && c != ':' && c != '"' && c != '=' && c != '.';
 }
 
 static void get_id(cml_stax_reader *r, string_builder *s, const char *err) {
@@ -218,7 +218,9 @@ cml_stax_reader *cmlr_create(int (*getc)(void *context), void *getc_context) {
 	r->in_array = 1;
 	r->cur = '\n';
 	r->prev = 0;
-	expected_new_line(r);
+  do {
+  	expected_new_line(r);
+  } while (r->cur == '\n' || r->cur == '\r');
 	return r;
 }
 

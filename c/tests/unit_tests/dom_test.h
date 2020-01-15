@@ -1,7 +1,7 @@
 #ifndef _CML_DOM_TEST_H_
 #define _CML_DOM_TEST_H_
 
-#include "../../src/dom.h"
+#include "../../src/cml_dom.h"
 #include "../../src/cml_config.h"
 #include "../../src/string_builder.h"
 

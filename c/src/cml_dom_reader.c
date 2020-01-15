@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cml_dom_writer.h"
-#include "dom.h"
+#include "cml_dom.h"
 #include "cml_stax_reader.h"
 #include "cml_dom_reader.h"
 
@@ -81,9 +81,9 @@ d_dom *cml_read(
 	d_dom *d = d_alloc_dom();
 	cml_stax_reader *r = cmlr_create(getc, getc_context);
 	const char *err = parse_var(d_root(d), d, r, cmlr_next(r));
+	if (cmlr_error(r))
+		err = cmlr_error(r);
 	if (err) {
-		if (cmlr_error(r))
-			err = cmlr_error(r);
 		if (on_error)
 			on_error(on_error_context, err, cmlr_line_num(r), cmlr_char_pos(r));
 		d_dispose_dom(d);

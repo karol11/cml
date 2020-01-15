@@ -4,7 +4,7 @@ CCFLAGS=-Wall -O3
 TARGET=test
 SRCS=\
 	func_test_main.c\
-	../../src/dom.c\
+	../../src/cml_dom.c\
 	../../src/string_builder.c\
 	../../src/cml_stax_reader.c\
 	../../src/cml_stax_writer.c\

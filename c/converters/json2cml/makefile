@@ -7,7 +7,7 @@ SRCS=\
 	../../src/string_builder.c\
 	../../src/cml_stax_writer.c\
 	../../src/cml_dom_writer.c\
-	../../src/dom.c\
+	../../src/cml_dom.c\
 	../../src/utf8.c\
 	../../src/cml_stax_reader.c\
 	../../src/cml_dom_reader.c

@@ -16,8 +16,8 @@ void sb_clear(string_builder *b);
 void sb_append(string_builder *b, char c);
 void sb_puts(string_builder *b, const char *s);
 void sb_grow(string_builder *b, size_t delta);
-int sb_size(string_builder *b);
-void sb_trunc(string_builder *b, int size);
+size_t sb_size(string_builder *b);
+void sb_trunc(string_builder *b, size_t size);
 
 #ifdef __cplusplus
 }
